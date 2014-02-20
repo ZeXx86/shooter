@@ -3,11 +3,11 @@
 
 #include <math.h>
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #ifdef ANDROID
-# include <SDL/SDL_opengles.h>
+# include <SDL2/SDL_opengles.h>
 #else
-# include <SDL/SDL_opengl.h>
+# include <SDL2/SDL_opengl.h>
 #endif
 
 #define FPS_MAX		60.0f
