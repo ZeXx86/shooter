@@ -8,16 +8,16 @@ level_t *level_get ()
 	return &level;
 }
 
-bool level_load (const char* s)
+bool level_load (const char *s)
 {
-	LOGI ("Loading: %s", s);
+	LOGI ("Loading %s\n", s);
 	string l = "";
 	ifstream f;
 
 	f.open (s);
 	
 	if (!f.is_open()) {
-		LOGI ("File %s not found!", s);
+		LOGI ("File %s not found!\n", s);
 		return false;
 	}
 
@@ -33,14 +33,14 @@ bool level_load (const char* s)
 		if (x < l.length())
 			x = l.length();
 		
-		LOGI (l.c_str ());
+		//LOGI (l.c_str ());
 
 		lines.push_back (l);
 	}
 
 	f.close ();
 
-	LOGI ("Level dimension: %d*%d", x, y);
+	LOGI ("Level dimension: %d*%d\n", x, y);
 
 	level.dim_x = x;
 	level.dim_y = y;

@@ -11,20 +11,20 @@ SDL_Window *g_window;
 
 bool init ()
 {
-	LOGI ("Shooter initialization");
+	LOGI ("Shooter initialization\n");
 
 	if (level_init () == false) {
-		LOGI ("Unable to initialize Level subsystem");
+		LOGI ("Unable to initialize Level subsystem\n");
 		return false;
 	}
 
 	if (player_init () == false) {
-		LOGI ("Unable to initialize Player subsystem");
+		LOGI ("Unable to initialize Player subsystem\n");
 		return false;
 	}
 
 	if (SDL_Init (SDL_SUBSYSTEMS) == -1) {
-		LOGI ("Unable to initialize SDL: %s", SDL_GetError ());
+		LOGI ("Unable to initialize SDL: %s\n", SDL_GetError ());
 		return false;
 	}
 
@@ -33,38 +33,23 @@ bool init ()
   
   	// Create an OpenGL context associated with the window.
   	SDL_GLContext glcontext = SDL_GL_CreateContext (g_window);
-	//SDL_GL_DeleteContext(glcontext);  
 
-	// Atributy rendering kontextu
-	/*SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, 1);
-
-	SDL_GL_SetAttribute (SDL_GL_BUFFER_SIZE, 24);
-	SDL_GL_SetAttribute (SDL_GL_DEPTH_SIZE, 24);
-
-	SDL_GL_SetAttribute (SDL_GL_STENCIL_SIZE, 0);
-
-	SDL_GL_SetAttribute (SDL_GL_ACCUM_RED_SIZE, 0);
-	SDL_GL_SetAttribute (SDL_GL_ACCUM_GREEN_SIZE, 0);
-	SDL_GL_SetAttribute (SDL_GL_ACCUM_BLUE_SIZE, 0);
-	SDL_GL_SetAttribute (SDL_GL_ACCUM_ALPHA_SIZE, 0);*/
 #ifdef FSAA
 	SDL_GL_SetAttribute (SDL_GL_MULTISAMPLEBUFFERS, 1);
 	SDL_GL_SetAttribute (SDL_GL_MULTISAMPLESAMPLES, FSAA);
 #endif
 
-  	/*SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 0);*/
+  	/*SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);*/
 
 	if (!gl_init ())	// Inicializace OpenGL
 		return false;
 
 	if (!tex_init ()) {
-		cerr << "Unable to initialize Texture subsystem" << endl;
+		LOGI ("Unable to initialize Texture subsystem\n");
 		return false;
 	}
 
-	gl_resize (WIN_WIDTH, WIN_HEIGHT);// Nastavi perspektivu
-	//SDL_WM_SetCaption (WIN_TITLE, NULL);// Titulek okna
 	gl_resize (WIN_WIDTH, WIN_HEIGHT);// Nastavi perspektivu
 #ifndef ANDROID
 	SDL_ShowCursor (SDL_DISABLE);
@@ -72,7 +57,7 @@ bool init ()
 	SDL_SetRelativeMouseMode (SDL_TRUE);
 #endif
 	if (!logic_init ()) {
-		LOGI ("Unable to initialize Logic subsystem");
+		LOGI ("Unable to initialize Logic subsystem\n");
 		return false;
 	}
 

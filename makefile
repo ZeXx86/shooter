@@ -1,6 +1,6 @@
 #CXX?=g++
-LIBS=-lSDL2 -lSDL2_image -lGL -lGLU 
-LIBS_DIR?=-L/home/tomas/Programming/SDL2/test/build/build/.libs -L/home/tomas/Programming/SDL2/SDL_image/.libs -I/home/tomas/Programming/SDL2/test/include -I/home/tomas/Programming/SDL2/SDL_image/
+LIBS=-lGL -lGLU `sdl2-config --cflags --libs` -lSDL2_image
+#LIBS_DIR?=-L/home/tomas/Programming/SDL2/test/build/build/.libs -L/home/tomas/Programming/SDL2/SDL_image/.libs -I/home/tomas/Programming/SDL2/test/include -I/home/tomas/Programming/SDL2/SDL_image/
 #CFLAGS?=-m32
 
 shooter: main.o gl.o event.o level.o mouse.o kbd.o player.o tex.o logic.o mdl.o bot.o

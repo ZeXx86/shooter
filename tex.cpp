@@ -14,7 +14,7 @@ static SDL_Surface *LoadBitmap (const char *filename)// Funkce pro načteni bitm
 	image = IMG_Load (filename);// Načtení dat obrázku
 
 	if (image == NULL) {
-		LOGI ("Nepodarilo se nacist %s: %s", filename, SDL_GetError());
+		LOGI ("Nepodarilo se nacist %s: %s\n", filename, SDL_GetError());
 		return 0;
 	}
 
@@ -22,7 +22,7 @@ static SDL_Surface *LoadBitmap (const char *filename)// Funkce pro načteni bitm
 	tmpbuf = (Uint8 *) malloc (image->pitch);
 
 	if (tmpbuf == NULL) {
-		LOGI ("Nedostatek pameti");
+		LOGI ("Nedostatek pameti\n");
 	        return NULL;
 	}
 
@@ -102,7 +102,7 @@ static bool tex_create (const char *file)
 		tex_cnt ++;
 	}
 
-	LOGI ("Loading texture %s: %d", file, texture);
+	LOGI ("Loading texture %s: %d\n", file, texture);
 
    	return true;
 }

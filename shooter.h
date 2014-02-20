@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #define SDL_SUBSYSTEMS SDL_INIT_VIDEO
 
@@ -16,7 +16,7 @@
 
 #define SDL_main main
 
-#define  LOGI(...) printf (__VA_ARGS__)
+#define  LOGI(...) printf (__VA_ARGS__ + '\n')
 #else
 # define WIN_FLAGS SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
 # define WIN_WIDTH 480
