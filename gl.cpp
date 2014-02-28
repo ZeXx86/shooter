@@ -4,9 +4,17 @@
 #include "tex.h"
 #include "mdl/mdl.h"
 #include "gl.h"
+#include "shader.h"
 
 
 static float fps_stick, fps_dtick;
+
+GLuint vbo_wall_id;
+GLuint vbo_floor_id;
+GLuint shader1;
+
+void gl_init_wall ();
+void gl_init_floor ();
 
 /*** An MDL model ***/
 struct mdl_model_t mdlfile[3];
@@ -34,9 +42,75 @@ bool gl_init ()
 	if (!mdl_read (PATH_DATA "player1.mdl", &mdlfile[1]))
 		return false;
 
+	gl_init_wall ();
+	gl_init_floor ();
+	
+	shader1 = shader_init ("data/shader");
+
 	return true;
 }
 
+void gl_init_wall ()
+{
+	const GLfloat buf[] = { 
+		// front
+		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+
+		// back
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+
+		1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+
+		// right
+		1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+		1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+
+		// left
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+
+		-1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f
+	};
+
+	glGenBuffers (1, &vbo_wall_id);
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_wall_id);
+	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
+}
+
+void gl_init_floor ()
+{
+	const GLfloat buf[] = { 
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+		 1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f,
+
+		 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f
+	};
+
+	glGenBuffers (1, &vbo_floor_id);
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_floor_id);
+	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
+}
 
 static void gluPerspective (GLfloat fovy, GLfloat aspect,
                GLfloat zNear, GLfloat zFar)//android ndk lacks glu tool kit (unbelievable)
@@ -82,106 +156,9 @@ float gl_fps_get ()
 	return 1000.0f / fps_dtick;
 }
 
-void gl_render_cube ()
+void gl_render_wall ()
 {
-	const GLfloat vert[] = { 
-		/*// front
-		-1.0f, -1.0f, 1.0f,
-		 1.0f, -1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f,  1.0f, 1.0f,
-
-		// back
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
-		1.0f, 1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-
-		// right
-		1.0f, -1.0f, -1.0f,
-		1.0f, 1.0f, -1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f, -1.0f,  1.0f,
-
-		// left
-		-1.0f, -1.0f, -1.0f, 
-		-1.0f, -1.0f, 1.0f, 
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, -1.0f,*/
-
-		// front
-		-1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f,
-
-		// back
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, 1.0f, -1.0f,
-
-		1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-
-		// right
-		1.0f, -1.0f, -1.0f, 
-		1.0f, -1.0f, 1.0f, 
-		1.0f, 1.0f, 1.0f,
-
-		1.0f, 1.0f, 1.0f, 
-		1.0f, 1.0f, -1.0f, 
-		1.0f, -1.0f, -1.0f,
-
-		// left
-		-1.0f, -1.0f, -1.0f, 
-		-1.0f, -1.0f, 1.0f, 
-		-1.0f, 1.0f, 1.0f,
-
-		-1.0f, 1.0f, 1.0f, 
-		-1.0f, 1.0f, -1.0f, 
-		-1.0f, -1.0f, -1.0f
-	};
-
-	static const GLfloat tex[] = {
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-		0.0f, 0.0f,
-
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-		0.0f, 0.0f
-    	};
-
-	//glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState (GL_VERTEX_ARRAY);
+	/*glEnableClientState (GL_VERTEX_ARRAY);
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 
 	glVertexPointer (3, GL_FLOAT, 0, vert);
@@ -190,42 +167,46 @@ void gl_render_cube ()
 	glDrawArrays (GL_TRIANGLES, 0, 24);
 
    	glDisableClientState (GL_VERTEX_ARRAY);
+	glDisableClientState (GL_TEXTURE_COORD_ARRAY);*/
+
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_wall_id);
+
+	glEnableClientState (GL_VERTEX_ARRAY);
+	glVertexPointer (3, GL_FLOAT, 5*sizeof(GLfloat), NULL);
+
+	glClientActiveTexture (GL_TEXTURE0);
+	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer (2, GL_FLOAT, 5*sizeof (GLfloat), ((char*) NULL) + 3*sizeof(GLfloat));
+
+	glDrawArrays (GL_TRIANGLES, 0, 24);
+	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
+	
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
 }
 
 void gl_render_floor ()
 {
-	static const GLfloat vert[] = { 
-		-1.0f, -1.0f, -1.0f, 
-		 1.0f, -1.0f, -1.0f, 
-		 1.0f, -1.0f,  1.0f,
-
-		 1.0f, -1.0f, 1.0f, 
-		-1.0f, -1.0f, 1.0f, 
-		-1.0f, -1.0f, -1.0f,
-	};
-
-	static const GLfloat tex[] = {
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-		0.0f, 0.0f
-    	};
-
+	/* enable program and set uniform variables */
+	glUseProgram (shader1);
 	
-	glEnableClientState (GL_VERTEX_ARRAY);
-	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_floor_id);
 
-	glVertexPointer (3, GL_FLOAT, 0, vert);
-	glTexCoordPointer (2, GL_FLOAT, 0, tex);
+	glEnableClientState (GL_VERTEX_ARRAY);
+	glVertexPointer (3, GL_FLOAT, 5*sizeof(GLfloat), NULL);
+
+	glClientActiveTexture (GL_TEXTURE0);
+	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer (2, GL_FLOAT, 5*sizeof (GLfloat), ((char*) NULL) + 3*sizeof(GLfloat));
 
 	glDrawArrays (GL_TRIANGLES, 0, 6);
-
-   	glDisableClientState (GL_VERTEX_ARRAY);
+	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
+	
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
+
+	/* disable program */
+	glUseProgram (0);
 }
 
 bool gl_frustum (player_t *p, float x, float y)
@@ -251,7 +232,7 @@ void gl_render_weapon (player_t *p)
 	}
 
 	if (p->mdl_frame < 5)
-		p->mdl_itp += fps_dtick / 5;
+		p->mdl_itp += 0.15f;
 
  	mdl_animate (0, mdlfile[0].header.num_frames - 1, &p->mdl_frame, &p->mdl_itp);
 
@@ -271,11 +252,9 @@ void gl_render_players (player_t *p)
 	for (l = player_list.next; l != &player_list; l = l->next) {
 		if (p == l)
 			continue;
-#ifndef ANDROID
-	  	l->mdl_itp += fps_dtick / 5;
-#else
-		l->mdl_itp += fps_dtick / 100;
-#endif
+
+		l->mdl_itp += 0.15f;
+
 	 	mdl_animate (0, mdlfile[1].header.num_frames - 1, &l->mdl_frame, &l->mdl_itp);
 	
 		glPushMatrix ();
@@ -334,7 +313,7 @@ void gl_render_level ()
 				if (b == '0')
 					gl_render_floor ();
 				else
-					gl_render_cube ();
+					gl_render_wall ();
 	
 			glPopMatrix ();
 		}
@@ -365,8 +344,8 @@ void gl_render ()
 
 	fps_dtick = SDL_GetTicks () - fps_stick;
 
-	if (1000/FPS_MAX > fps_dtick)
-		SDL_Delay (1000/FPS_MAX - fps_dtick);
+	if (1000.0f/FPS_MAX > fps_dtick)
+		SDL_Delay (1000.0f/FPS_MAX - fps_dtick);
 	
 	fps_stick = SDL_GetTicks ();
 }

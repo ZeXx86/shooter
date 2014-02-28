@@ -1,10 +1,8 @@
-#CXX?=g++
-LIBS=-lGL -lGLU `sdl2-config --cflags --libs` -lSDL2_image
-#LIBS_DIR?=-L/home/tomas/Programming/SDL2/test/build/build/.libs -L/home/tomas/Programming/SDL2/SDL_image/.libs -I/home/tomas/Programming/SDL2/test/include -I/home/tomas/Programming/SDL2/SDL_image/
-#CFLAGS?=-m32
+LIBS=`sdl2-config --cflags --libs` -lGL -lGLU -lSDL2_image
+CFLAGS=-DGL_GLEXT_PROTOTYPES
 
-shooter: main.o gl.o event.o level.o mouse.o kbd.o player.o tex.o logic.o mdl.o bot.o
-	$(CXX) $(CFLAGS) main.o gl.o event.o level.o mouse.o player.o kbd.o tex.o logic.o mdl.o bot.o $(LIBS_DIR) $(LIBS) -o shooter
+shooter: main.o gl.o event.o level.o mouse.o kbd.o player.o tex.o logic.o mdl.o bot.o shader.o
+	$(CXX) $(CFLAGS) main.o gl.o event.o level.o mouse.o player.o kbd.o tex.o logic.o mdl.o bot.o shader.o $(LIBS_DIR) $(LIBS) -o shooter
 #`sdl-config --cflags --libs`
 main.o: main.cpp shooter.h gl.h event.h level.h
 	$(CXX) $(CFLAGS) $(LIBS_DIR) main.cpp -c
@@ -38,7 +36,9 @@ bot.o: bot.cpp bot.h shooter.h
 
 mdl.o: mdl/mdl.cpp mdl/mdl.h shooter.h
 	$(CXX) $(CFLAGS) $(LIBS_DIR) mdl/mdl.cpp -c
-
+	
+shader.o: shader.cpp shader.h shooter.h
+	$(CXX) $(CFLAGS) $(LIBS_DIR) shader.cpp -c
 
 clean:
 	rm -f *.o shooter

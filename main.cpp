@@ -27,20 +27,20 @@ bool init ()
 		LOGI ("Unable to initialize SDL: %s\n", SDL_GetError ());
 		return false;
 	}
+	
+#ifdef FSAA
+	SDL_GL_SetAttribute (SDL_GL_MULTISAMPLEBUFFERS, 1);
+	SDL_GL_SetAttribute (SDL_GL_MULTISAMPLESAMPLES, FSAA);
+#endif
+
+  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 
 	g_window = SDL_CreateWindow ("Shooter", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 						WIN_WIDTH, WIN_HEIGHT, WIN_FLAGS);
   
   	// Create an OpenGL context associated with the window.
   	SDL_GLContext glcontext = SDL_GL_CreateContext (g_window);
-
-#ifdef FSAA
-	SDL_GL_SetAttribute (SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute (SDL_GL_MULTISAMPLESAMPLES, FSAA);
-#endif
-
-  	/*SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);*/
 
 	if (!gl_init ())	// Inicializace OpenGL
 		return false;
