@@ -33,7 +33,7 @@ bool init ()
 #endif
 
   	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 1);
 
 	g_window = SDL_CreateWindow ("Shooter", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 						WIN_WIDTH, WIN_HEIGHT, WIN_FLAGS);
@@ -41,6 +41,8 @@ bool init ()
   	// Create an OpenGL context associated with the window.
   	SDL_GLContext glcontext = SDL_GL_CreateContext (g_window);
 
+	glewInit ();
+	
 	if (!gl_init ())	// Inicializace OpenGL
 		return false;
 

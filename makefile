@@ -1,5 +1,5 @@
-LIBS=`sdl2-config --cflags --libs` -lGL -lGLU -lSDL2_image
-CFLAGS=-DGL_GLEXT_PROTOTYPES
+LIBS=`sdl2-config --cflags --libs` -lGL -lGLEW -lGLU -lSDL2_image
+CFLAGS=
 
 shooter: main.o gl.o event.o level.o mouse.o kbd.o player.o tex.o logic.o mdl.o bot.o shader.o
 	$(CXX) $(CFLAGS) main.o gl.o event.o level.o mouse.o player.o kbd.o tex.o logic.o mdl.o bot.o shader.o $(LIBS_DIR) $(LIBS) -o shooter

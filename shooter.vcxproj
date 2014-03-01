@@ -48,14 +48,14 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>libs\SDL2_image-2.0.0;libs\SDL2-2.0.1;libs\SDL2_image-2.0.0\SDL2;libs\SDL2-2.0.1\SDL2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs\SDL2_image-2.0.0;libs\SDL2-2.0.1;libs\SDL2_image-2.0.0\SDL2;libs\SDL2-2.0.1\SDL2;libs\glew</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2test.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>libs\SDL2-2.0.1\lib\x86;libs\SDL2_image-2.0.0\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2test.lib;SDL2_image.lib;glew32.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>libs\SDL2-2.0.1\lib\x86;libs\SDL2_image-2.0.0\lib\x86;libs\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

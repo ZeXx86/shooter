@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include <GL/glew.h>
 #include <SDL2/SDL.h>
 
 #define SDL_SUBSYSTEMS SDL_INIT_VIDEO

@@ -112,6 +112,7 @@ void gl_init_floor ()
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 }
 
+#ifndef __WIN32__
 static void gluPerspective (GLfloat fovy, GLfloat aspect,
                GLfloat zNear, GLfloat zFar)//android ndk lacks glu tool kit (unbelievable)
 {
@@ -132,6 +133,7 @@ glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 #endif
     #undef PI
 }
+#endif
 
 void gl_resize (int width, int height)
 {
@@ -158,17 +160,6 @@ float gl_fps_get ()
 
 void gl_render_wall ()
 {
-	/*glEnableClientState (GL_VERTEX_ARRAY);
-	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
-
-	glVertexPointer (3, GL_FLOAT, 0, vert);
-	glTexCoordPointer (2, GL_FLOAT, 0, tex);
-
-	glDrawArrays (GL_TRIANGLES, 0, 24);
-
-   	glDisableClientState (GL_VERTEX_ARRAY);
-	glDisableClientState (GL_TEXTURE_COORD_ARRAY);*/
-
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_wall_id);
 
 	glEnableClientState (GL_VERTEX_ARRAY);
@@ -186,10 +177,7 @@ void gl_render_wall ()
 }
 
 void gl_render_floor ()
-{
-	/* enable program and set uniform variables */
-	//glUseProgram (shader1);
-	
+{	
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_floor_id);
 
 	glEnableClientState (GL_VERTEX_ARRAY);
@@ -199,14 +187,19 @@ void gl_render_floor ()
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer (2, GL_FLOAT, 5*sizeof (GLfloat), ((char*) NULL) + 3*sizeof(GLfloat));
 
+	/* enable program and set uniform variables */
+	//glUseProgram (shader1);
+	
 	glDrawArrays (GL_TRIANGLES, 0, 6);
+	
+	/* disable program */
+	//glUseProgram (0);
+	
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
 	
 	glBindBuffer (GL_ARRAY_BUFFER, 0);
 
-	/* disable program */
-	//glUseProgram (0);
 }
 
 bool gl_frustum (player_t *p, float x, float y)

@@ -8,11 +8,6 @@
 # include <SDL2/SDL_opengles.h>
 #else
 # include <SDL2/SDL_opengl.h>
-
-# ifdef __WIN32__
-#  pragma comment (lib,"opengl32.lib")
-#  pragma comment (lib,"glu32.lib")
-# endif
 #endif
 
 #define FPS_MAX		60.0f
