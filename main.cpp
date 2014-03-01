@@ -6,8 +6,12 @@
 #include "tex.h"
 #include "gl.h"
 
-SDL_Window *g_window;
+#ifdef __WIN32__
+# pragma comment (lib,"opengl32.lib")
+# pragma comment (lib,"glu32.lib")
+#endif
 
+SDL_Window *g_window;
 
 bool init ()
 {

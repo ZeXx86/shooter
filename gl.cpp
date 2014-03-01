@@ -188,7 +188,7 @@ void gl_render_wall ()
 void gl_render_floor ()
 {
 	/* enable program and set uniform variables */
-	glUseProgram (shader1);
+	//glUseProgram (shader1);
 	
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_floor_id);
 
@@ -206,7 +206,7 @@ void gl_render_floor ()
 	glBindBuffer (GL_ARRAY_BUFFER, 0);
 
 	/* disable program */
-	glUseProgram (0);
+	//glUseProgram (0);
 }
 
 bool gl_frustum (player_t *p, float x, float y)
