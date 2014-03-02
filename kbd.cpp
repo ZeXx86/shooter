@@ -7,13 +7,17 @@ static bool kbmap[323] = { false };
 
 void kbd_handler (SDL_Event event)
 {
+	if (event.key.keysym.sym >= sizeof (kbmap))
+		return;
+	
 	kbd.event = event;
-	//printf ("%d : %s\n", event.key.keysym.scancode, SDL_GetKeyName( event.key.keysym.sym ));
 
+	/* znacime si stisk a pusteni klaves do mapy,
+	 * abychom mohli pracovat teoreticky se vsemi klavesy naraz */
 	if (event.type == SDL_KEYDOWN)
-		kbmap[event.key.keysym.scancode] = true;
+		kbmap[event.key.keysym.sym] = true;
 	if (event.type == SDL_KEYUP)
-		kbmap[event.key.keysym.scancode] = false;
+		kbmap[event.key.keysym.sym] = false;
 }
 
 bool kbd_key_pressed (unsigned short key)

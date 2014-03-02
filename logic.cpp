@@ -65,15 +65,15 @@ void logic_motion (player_t *p)
 		p->state |= PLAYER_STATE_FIRE;
 	}
 
-	if (kbd_key_pressed (SDLK_LEFT))
+	if (kbd_key_pressed (SDLK_a))
 		p->rot_y -= 0.5f;
-	if (kbd_key_pressed (SDLK_RIGHT))
+	if (kbd_key_pressed (SDLK_d))
 		p->rot_y += 0.5f;
-	if (kbd_key_pressed (SDLK_UP)) {
+	if (kbd_key_pressed (SDLK_w)) {
 		speed = 1;
 		p->state |= PLAYER_STATE_WALK;
 	}
-	if (kbd_key_pressed (SDLK_DOWN)) {
+	if (kbd_key_pressed (SDLK_s)) {
 		speed = -1;
 		p->state |= PLAYER_STATE_WALK;
 	}
