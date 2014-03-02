@@ -13,7 +13,7 @@
 # define WIN_WIDTH 1280
 # define WIN_HEIGHT 1024
 # define WIN_BPP 0
-# define FSAA 2
+# define FSAA 4
 
 #define SDL_main main
 

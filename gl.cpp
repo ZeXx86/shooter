@@ -186,14 +186,8 @@ void gl_render_floor ()
 	glClientActiveTexture (GL_TEXTURE0);
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer (2, GL_FLOAT, 5*sizeof (GLfloat), ((char*) NULL) + 3*sizeof(GLfloat));
-
-	/* enable program and set uniform variables */
-	//glUseProgram (shader1);
 	
 	glDrawArrays (GL_TRIANGLES, 0, 6);
-	
-	/* disable program */
-	//glUseProgram (0);
 	
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
@@ -255,7 +249,14 @@ void gl_render_players (player_t *p)
 			glRotatef (l->rot_y-90, 0, 1, 0);
 			glRotatef (-90, 1, 0, 0);
 			glScalef (0.023f, 0.023f, 0.023f);
+			
+			/* enable program and set uniform variables */
+			glUseProgram (shader1);
+	
 			mdl_renderitp (l->mdl_frame, l->mdl_itp, &mdlfile[1]);
+			
+			/* disable program */
+			glUseProgram (0);
 		glPopMatrix ();
 		
 		switch (l->state) {
