@@ -10,7 +10,7 @@
 # include <SDL2/SDL_opengl.h>
 #endif
 
-#define FPS_MAX		60.0f
+#define FPS_MAX		120.0f
 #define NEAR_PLANE 	0.15
 #define FAR_PLANE 	100.0
 #define WALL_DIM	2.0f

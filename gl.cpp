@@ -7,7 +7,7 @@
 #include "shader.h"
 
 
-static float fps_stick, fps_dtick;
+static unsigned fps_stick, fps_dtick;
 
 GLuint vbo_wall_id;
 GLuint vbo_floor_id;
@@ -219,7 +219,7 @@ void gl_render_weapon (player_t *p)
 	}
 
 	if (p->mdl_frame < 5)
-		p->mdl_itp += 0.15f;
+		p->mdl_itp += 0.11f * (float) fps_dtick;
 
  	mdl_animate (0, mdlfile[0].header.num_frames - 1, &p->mdl_frame, &p->mdl_itp);
 
@@ -240,7 +240,7 @@ void gl_render_players (player_t *p)
 		if (p == l)
 			continue;
 
-		l->mdl_itp += 0.15f;
+		l->mdl_itp += 0.11f * (float) fps_dtick;
 
 	 	mdl_animate (0, mdlfile[1].header.num_frames - 1, &l->mdl_frame, &l->mdl_itp);
 	
@@ -316,9 +316,11 @@ void gl_render_level ()
 
 void gl_render ()
 {
+	fps_stick = SDL_GetTicks ();
+	
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
-
+	
 	player_t *p = player_get ();
 
 	/* Weapon */
@@ -337,10 +339,8 @@ void gl_render ()
 	SDL_GL_SwapWindow (g_window);
 
 	fps_dtick = SDL_GetTicks () - fps_stick;
-
-	if (1000.0f/FPS_MAX > fps_dtick)
+		
+	if (fps_dtick < 1000.0f/FPS_MAX)
 		SDL_Delay (1000.0f/FPS_MAX - fps_dtick);
-	
-	fps_stick = SDL_GetTicks ();
 }
 
