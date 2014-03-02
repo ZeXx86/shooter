@@ -225,76 +225,65 @@ FreeModel (struct mdl_model_t *mdl)
  */
 void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
 {
-  int i, j;
-  GLfloat s, t;
-  vec3_t norm, v;
-  GLfloat *n_curr, *n_next;
-  struct mdl_vertex_t *pvert1, *pvert2;
+#ifdef __WIN32__
+	interp = 0.0f;
+#endif
+	int i, j;
+	GLfloat s, t;
+	vec3_t norm, v;
+	GLfloat *n_curr, *n_next;
+	struct mdl_vertex_t *pvert1, *pvert2;
 
-  /* Check if n is in a valid range */
-  if ((n < 0) || (n > mdl->header.num_frames))
-    return;
+	/* Check if n is in a valid range */
+	if ((n < 0) || (n > mdl->header.num_frames))
+		return;
 
-  /* Enable model's texture */
-  glBindTexture (GL_TEXTURE_2D, mdl->tex_id[mdl->iskin]);
+	/* Enable model's texture */
+	glBindTexture (GL_TEXTURE_2D, mdl->tex_id[mdl->iskin]);
 
-  float *gles_verts = mdl->gles_verts;
-  float *gles_norms = mdl->gles_norms;
-  float *gles_coords = mdl->gles_coords;
+	float *gles_verts = mdl->gles_verts;
+	float *gles_norms = mdl->gles_norms;
+	float *gles_coords = mdl->gles_coords;
 
-  /* Draw the model */
- // glBegin (GL_TRIANGLES);
-    /* Draw each triangle */
-    for (i = 0; i < mdl->header.num_tris; ++i)
-      {
-	/* Draw each vertex */
-	for (j = 0; j < 3; ++j)
-	  {
-	    pvert1 = &mdl->frames[n].frame.verts[mdl->triangles[i].vertex[j]];
-	    pvert2 = &mdl->frames[n + 1].frame.verts[mdl->triangles[i].vertex[j]];
+	/* Draw the model */
 
-	    /* Compute texture coordinates */
-	    s = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].s;
-	    t = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].t;
+	/* Draw each triangle */
+	for (i = 0; i < mdl->header.num_tris; ++ i) {
+		/* Draw each vertex */
+		for (j = 0; j < 3; ++ j) {
+			pvert1 = &mdl->frames[n].frame.verts[mdl->triangles[i].vertex[j]];
+			pvert2 = &mdl->frames[n + 1].frame.verts[mdl->triangles[i].vertex[j]];
 
-	    if (!mdl->triangles[i].facesfront &&
-		mdl->texcoords[mdl->triangles[i].vertex[j]].onseam)
-	      {
-		s += mdl->header.skinwidth * 0.5f; /* Backface */
-	      }
+			/* Compute texture coordinates */
+			s = (GLfloat) mdl->texcoords[mdl->triangles[i].vertex[j]].s;
+			t = (GLfloat) mdl->texcoords[mdl->triangles[i].vertex[j]].t;
 
-	    /* Scale s and t to range from 0.0 to 1.0 */
-	    gles_coords[0] = s = (s + 0.5) / mdl->header.skinwidth;
-	    gles_coords[1] = t = (t + 0.5) / mdl->header.skinheight;
+			if (!mdl->triangles[i].facesfront && mdl->texcoords[mdl->triangles[i].vertex[j]].onseam) {
+				s += mdl->header.skinwidth * 0.5f; /* Backface */
+			}
 
-	    /* Pass texture coordinates to OpenGL */
-	//    glTexCoord2f (s, t);
+			/* Scale s and t to range from 0.0 to 1.0 */
+			gles_coords[0] = s = (s + 0.5) / mdl->header.skinwidth;
+			gles_coords[1] = t = (t + 0.5) / mdl->header.skinheight;
 
-	    /* Interpolate normals */
-	    n_curr = anorms_table[pvert1->normalIndex];
-	    n_next = anorms_table[pvert2->normalIndex];
+			/* Interpolate normals */
+			n_curr = anorms_table[pvert1->normalIndex];
+			n_next = anorms_table[pvert2->normalIndex];
 
-	    gles_norms[0] = norm[0] = n_curr[0] + interp * (n_next[0] - n_curr[0]);
-	    gles_norms[1] = norm[1] = n_curr[1] + interp * (n_next[1] - n_curr[1]);
-	    gles_norms[2] = norm[2] = n_curr[2] + interp * (n_next[2] - n_curr[2]);
+			gles_norms[0] = norm[0] = n_curr[0] + interp * (n_next[0] - n_curr[0]);
+			gles_norms[1] = norm[1] = n_curr[1] + interp * (n_next[1] - n_curr[1]);
+			gles_norms[2] = norm[2] = n_curr[2] + interp * (n_next[2] - n_curr[2]);
 
-	   // glNormal3fv (norm);
-
-	    /* Interpolate vertices */
-	    v[0] = gles_verts[0] = (mdl->header.scale[0] * (pvert1->v[0] + interp
-		* (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0]);
-	    v[1] = gles_verts[1] = (mdl->header.scale[1] * (pvert1->v[1] + interp
-		* (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1]);
-	    v[2] = gles_verts[2] = (mdl->header.scale[2] * (pvert1->v[2] + interp
-		* (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2]);
-	    
-		gles_norms += 3;
-		gles_verts += 3;
-		gles_coords += 2;
-	  }
-	//    glVertex3fv (v);	  
-      }
-  //glEnd ();
+			/* Interpolate vertices */
+			v[0] = gles_verts[0] = (mdl->header.scale[0] * (pvert1->v[0] + interp * (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0]);
+			v[1] = gles_verts[1] = (mdl->header.scale[1] * (pvert1->v[1] + interp * (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1]);
+			v[2] = gles_verts[2] = (mdl->header.scale[2] * (pvert1->v[2] + interp * (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2]);
+		
+			gles_norms += 3;
+			gles_verts += 3;
+			gles_coords += 2;
+		}
+	}
   
 	gles_verts = mdl->gles_verts;
   
