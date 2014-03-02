@@ -218,7 +218,7 @@ FreeModel (struct mdl_model_t *mdl)
       mdl->frames = NULL;
     }
 }
-#include <unistd.h>
+
 /**
  * Render the model with interpolation between frame n and n+1.
  * interp is the interpolation percent. (from 0.0 to 1.0)
