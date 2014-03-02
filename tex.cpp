@@ -94,7 +94,6 @@ static bool tex_create (const char *file)
 	GLuint *list = (GLuint *) realloc (tex_list, sizeof (GLuint) * (tex_cnt+1));
 	
 	if (list) {
-		memcpy (list, tex_list, sizeof (GLuint) * tex_cnt);
 		tex_list = list;
 
 		tex_list[tex_cnt] = texture;

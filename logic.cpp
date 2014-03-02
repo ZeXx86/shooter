@@ -57,8 +57,10 @@ void logic_motion (player_t *p)
 		p->state |= PLAYER_STATE_FIRE;
 	}
 #else	
-	p->rot_y += m->x / 2;
+	m->x_s += 0.07f * (m->x - m->x_s);
 
+	p->rot_y += m->x_s / 2;
+	
 	if (m->state & SDL_BUTTON(1)) {
 		p->state |= PLAYER_STATE_FIRE;
 	}

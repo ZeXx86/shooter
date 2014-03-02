@@ -10,6 +10,9 @@ typedef struct {
 	int abs_x;
 	int abs_y;
 
+	float x_s;
+	float y_s;
+	
 	unsigned char state;
 } mouse_t;
 

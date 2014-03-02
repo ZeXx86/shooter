@@ -121,7 +121,7 @@ int mdl_read (const char *filename, struct mdl_model_t *mdl)
     malloc (sizeof (GLuint) * mdl->header.num_skins);
 
   mdl->gles_verts = (float *) malloc (sizeof (float) * mdl->header.num_tris * 9);
-  //mdl->gles_norms = (float *) malloc (sizeof (float) * mdl->header.num_tris * 3);
+  mdl->gles_norms = (float *) malloc (sizeof (float) * mdl->header.num_tris * 9);
   mdl->gles_coords = (float *) malloc (sizeof (float) * mdl->header.num_tris * 6);
 
   mdl->iskin = 0;
@@ -218,67 +218,7 @@ FreeModel (struct mdl_model_t *mdl)
       mdl->frames = NULL;
     }
 }
-
-/**
- * Render the model at frame n.
- */
-#ifndef ANDROID
-void
-RenderFrame (int n, const struct mdl_model_t *mdl)
-{
-  int i, j;
-  GLfloat s, t;
-  vec3_t v;
-  struct mdl_vertex_t *pvert;
-
-  /* Check if n is in a valid range */
-  if ((n < 0) || (n > mdl->header.num_frames - 1))
-    return;
-
-  /* Enable model's texture */
-  glBindTexture (GL_TEXTURE_2D, mdl->tex_id[mdl->iskin]);
-
-  /* Draw the model */
-  glBegin (GL_TRIANGLES);
-    /* Draw each triangle */
-    for (i = 0; i < mdl->header.num_tris; ++i)
-      {
-	/* Draw each vertex */
-	for (j = 0; j < 3; ++j)
-	  {
-	    pvert = &mdl->frames[n].frame.verts[mdl->triangles[i].vertex[j]];
-
-	    /* Compute texture coordinates */
-	    s = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].s;
-	    t = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].t;
-
-	    if (!mdl->triangles[i].facesfront &&
-		mdl->texcoords[mdl->triangles[i].vertex[j]].onseam)
-	      {
-		s += mdl->header.skinwidth * 0.5f; /* Backface */
-	      }
-
-	    /* Scale s and t to range from 0.0 to 1.0 */
-	    s = (s + 0.5) / mdl->header.skinwidth;
-	    t = (t + 0.5) / mdl->header.skinheight;
-
-	    /* Pass texture coordinates to OpenGL */
-	    glTexCoord2f (s, t);
-
-	    /* Normal vector */
-	    glNormal3fv (anorms_table[pvert->normalIndex]);
-
-	    /* Calculate real vertex position */
-	    v[0] = (mdl->header.scale[0] * pvert->v[0]) + mdl->header.translate[0];
-	    v[1] = (mdl->header.scale[1] * pvert->v[1]) + mdl->header.translate[1];
-	    v[2] = (mdl->header.scale[2] * pvert->v[2]) + mdl->header.translate[2];
-
-	    glVertex3fv (v);
-	  }
-      }
-  glEnd ();
-}
-#endif
+#include <unistd.h>
 /**
  * Render the model with interpolation between frame n and n+1.
  * interp is the interpolation percent. (from 0.0 to 1.0)
@@ -299,7 +239,7 @@ void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
   glBindTexture (GL_TEXTURE_2D, mdl->tex_id[mdl->iskin]);
 
   float *gles_verts = mdl->gles_verts;
-  //float *gles_norms = mdl->gles_norms;
+  float *gles_norms = mdl->gles_norms;
   float *gles_coords = mdl->gles_coords;
 
   /* Draw the model */
@@ -334,44 +274,42 @@ void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
 	    n_curr = anorms_table[pvert1->normalIndex];
 	    n_next = anorms_table[pvert2->normalIndex];
 
-	    /*gles_norms[0] = */norm[0] = n_curr[0] + interp * (n_next[0] - n_curr[0]);
-	    /*gles_norms[1] = */norm[1] = n_curr[1] + interp * (n_next[1] - n_curr[1]);
-	    /*gles_norms[2] = */norm[2] = n_curr[2] + interp * (n_next[2] - n_curr[2]);
+	    gles_norms[0] = norm[0] = n_curr[0] + interp * (n_next[0] - n_curr[0]);
+	    gles_norms[1] = norm[1] = n_curr[1] + interp * (n_next[1] - n_curr[1]);
+	    gles_norms[2] = norm[2] = n_curr[2] + interp * (n_next[2] - n_curr[2]);
 
 	   // glNormal3fv (norm);
 
 	    /* Interpolate vertices */
-	    v[0] = gles_verts[0] = (int) (mdl->header.scale[0] * (pvert1->v[0] + interp
+	    v[0] = gles_verts[0] = (mdl->header.scale[0] * (pvert1->v[0] + interp
 		* (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0]);
-	    v[1] = gles_verts[1] = (int) (mdl->header.scale[1] * (pvert1->v[1] + interp
+	    v[1] = gles_verts[1] = (mdl->header.scale[1] * (pvert1->v[1] + interp
 		* (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1]);
-	    v[2] = gles_verts[2] = (int) (mdl->header.scale[2] * (pvert1->v[2] + interp
+	    v[2] = gles_verts[2] = (mdl->header.scale[2] * (pvert1->v[2] + interp
 		* (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2]);
-
-	//    glVertex3fv (v);
+	    
+		gles_norms += 3;
 		gles_verts += 3;
-		//gles_norms += 3
 		gles_coords += 2;
 	  }
-
-          
-          ;
-	  
+	//    glVertex3fv (v);	  
       }
   //glEnd ();
-
+  
+	gles_verts = mdl->gles_verts;
+  
 	glEnableClientState (GL_VERTEX_ARRAY);
-	//glEnableClientState (GL_NORMAL_ARRAY);
+	glEnableClientState (GL_NORMAL_ARRAY);
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 
 	glVertexPointer (3, GL_FLOAT, 0, mdl->gles_verts);
-	//glNormalPointer (GL_FLOAT, 0, mdl->gles_norms);
+	glNormalPointer (GL_FLOAT, 0, mdl->gles_norms);
 	glTexCoordPointer (2, GL_FLOAT, 0, mdl->gles_coords);
 
 	glDrawArrays (GL_TRIANGLES, 0, mdl->header.num_tris*3);
 
 	glDisableClientState (GL_VERTEX_ARRAY);
-	//glDisableClientState (GL_NORMAL_ARRAY);
+	glDisableClientState (GL_NORMAL_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
 }
 
