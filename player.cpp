@@ -20,6 +20,8 @@ player_t *player_add ()
 	p->pos_y = pos_boot_x / 2;
 
 	p->rot_y = 0;
+	
+	p->mdl_itp = 0.0f;
 
 	/* add into list */
 	p->next = &player_list;

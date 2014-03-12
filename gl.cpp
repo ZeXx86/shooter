@@ -4,14 +4,18 @@
 #include "tex.h"
 #include "mdl/mdl.h"
 #include "gl.h"
+#include "light.h"
 #include "shader.h"
+#include "camera.h"
 
 
 static unsigned fps_stick, fps_dtick;
 
 GLuint vbo_wall_id;
 GLuint vbo_floor_id;
-GLuint shader1;
+GLuint shader[10];
+
+light_t light1;
 
 void gl_init_wall ();
 void gl_init_floor ();
@@ -45,8 +49,18 @@ bool gl_init ()
 	gl_init_wall ();
 	gl_init_floor ();
 	
-	shader1 = shader_init ("data/shader");
+	shader[0] = shader_init ("data/shader");
+	shader[1] = shader_init ("data/shader_gun");
+	shader[2] = shader_init ("data/shader_level");
 
+	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.5f;
+	light1.ambient[3] = 1.0f;
+	
+	light1.diffuse[0] = light1.diffuse[1] = light1.diffuse[2] = 0.5f;
+	light1.diffuse[3] = 1.0f;
+	
+	light1.name = strdup ("light");
+	
 	return true;
 }
 
@@ -102,8 +116,8 @@ void gl_init_floor ()
 		 1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
 		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f,
 
-		 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f,  1.0f, 0.0f, 1.0f,
 		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f
 	};
 
@@ -137,17 +151,7 @@ glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 
 void gl_resize (int width, int height)
 {
-	if (height == 0)
-		height = 1;
-
-	glViewport (0, 0, width, height);
-
-	glMatrixMode (GL_PROJECTION);
-	glLoadIdentity ();
-
-	gluPerspective (60.0, (GLfloat) width / (GLfloat) height, NEAR_PLANE, FAR_PLANE);
-
-	glMatrixMode (GL_MODELVIEW);
+	camera_init (0, 0, width, height);
 }
 
 float gl_fps_get ()
@@ -161,7 +165,7 @@ float gl_fps_get ()
 void gl_render_wall ()
 {
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_wall_id);
-
+	
 	glEnableClientState (GL_VERTEX_ARRAY);
 	glVertexPointer (3, GL_FLOAT, 5*sizeof(GLfloat), NULL);
 
@@ -169,7 +173,20 @@ void gl_render_wall ()
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer (2, GL_FLOAT, 5*sizeof (GLfloat), ((char*) NULL) + 3*sizeof(GLfloat));
 
+	glEnableVertexAttribArray (0);
+	glEnableVertexAttribArray (1);
+	//glEnableVertexAttribArray (2);
+	
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	//glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	
 	glDrawArrays (GL_TRIANGLES, 0, 24);
+	
+	glDisableVertexAttribArray (0);
+	glDisableVertexAttribArray (1);
+	//glDisableVertexAttribArray (2);
+	
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
 	
@@ -187,7 +204,19 @@ void gl_render_floor ()
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer (2, GL_FLOAT, 5*sizeof (GLfloat), ((char*) NULL) + 3*sizeof(GLfloat));
 	
+	glEnableVertexAttribArray (0);
+	glEnableVertexAttribArray (1);
+	//glEnableVertexAttribArray (2);
+	
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	//glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	
 	glDrawArrays (GL_TRIANGLES, 0, 6);
+	
+	glDisableVertexAttribArray (0);
+	glDisableVertexAttribArray (1);
+	//glDisableVertexAttribArray (2);
 	
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
@@ -210,6 +239,8 @@ bool gl_frustum (player_t *p, float x, float y)
 
 void gl_render_weapon (player_t *p)
 {
+	camera_t *cam = camera_get ();
+	
 	if (p->state & PLAYER_STATE_FIRE) {
 		p->state &= ~PLAYER_STATE_FIRE;
 
@@ -223,18 +254,49 @@ void gl_render_weapon (player_t *p)
 
  	mdl_animate (0, mdlfile[0].header.num_frames - 1, &p->mdl_frame, &p->mdl_itp);
 
-	glPushMatrix ();
+	glm::mat4 mdl_matrix;
+	mdl_matrix = 	glm::translate (glm::vec3 (0.08f, -0.03, -0.18f)) *
+			glm::rotate (90.0f, glm::vec3 (0, 1, 0)) *
+			glm::rotate (-90.0f, glm::vec3 (1, 0, 0)) *
+			glm::scale (glm::vec3 (0.01f, 0.01f, 0.01f));
+	
+	/* enable program and set uniform variables */
+	glUseProgram (shader[1]);
+	
+	glm::mat4 tmp = /*cam->view * */mdl_matrix;
+
+	int uniform = glGetUniformLocation (shader[1], "PMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
+	uniform = glGetUniformLocation (shader[1], "VMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->view[0]);
+	uniform = glGetUniformLocation (shader[1], "MVMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+	uniform = glGetUniformLocation (shader[1], "NormalMatrix");
+	glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
+
+	GLuint tex_id  = glGetUniformLocation (shader[1], "TexSampler");
+	glUniform1i (tex_id, 0);
+	
+	shader_getuniform_light (shader[1], &light1);
+
+	mdl_renderitp (p->mdl_frame, p->mdl_itp, &mdlfile[0]);
+	
+	glUseProgram (0);
+	
+	/*glPushMatrix ();
 		glTranslatef (0.08f, -0.03, -0.18f);
 		glRotatef (90, 0, 1, 0);
 		glRotatef (-90, 1, 0, 0);
 	
 		glScalef (0.01f, 0.01f, 0.01f);
 		mdl_renderitp (p->mdl_frame, p->mdl_itp, &mdlfile[0]);
-	glPopMatrix ();
+	glPopMatrix ();*/
 }
 
 void gl_render_players (player_t *p)
 {
+	camera_t *cam = camera_get ();
+	
 	player_t *l;
 	for (l = player_list.next; l != &player_list; l = l->next) {
 		if (p == l)
@@ -244,27 +306,53 @@ void gl_render_players (player_t *p)
 
 	 	mdl_animate (0, mdlfile[1].header.num_frames - 1, &l->mdl_frame, &l->mdl_itp);
 	
-		glPushMatrix ();
-			glTranslatef (-l->pos_x, -0.4, -l->pos_y);
-			glRotatef (l->rot_y-90, 0, 1, 0);
-			glRotatef (-90, 1, 0, 0);
-			glScalef (0.023f, 0.023f, 0.023f);
+
+		/*glTranslatef (-l->pos_x, -0.4, -l->pos_y);
+		glRotatef (l->rot_y-90, 0, 1, 0);
+		glRotatef (-90, 1, 0, 0);
+		glScalef (0.023f, 0.023f, 0.023f);*/
+		glm::mat4 mdl_matrix;
+		mdl_matrix = 	glm::translate (glm::vec3 (-l->pos_x, -0.4, -l->pos_y)) *
+				glm::rotate (l->rot_y-90, glm::vec3 (0, 1, 0)) *
+				glm::rotate (-90.0f, glm::vec3 (1, 0, 0)) *
+				glm::scale (glm::vec3 (0.023f, 0.023f, 0.023f));
 			
-			/* enable program and set uniform variables */
-			glUseProgram (shader1);
+		/* enable program and set uniform variables */
+		glUseProgram (shader[0]);
 	
-			mdl_renderitp (l->mdl_frame, l->mdl_itp, &mdlfile[1]);
+		glm::mat4 tmp = cam->view * mdl_matrix;
+
+		int uniform = glGetUniformLocation (shader[0], "PMatrix");
+		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
+		uniform = glGetUniformLocation (shader[0], "VMatrix");
+		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->view[0]);
+		uniform = glGetUniformLocation (shader[0], "MVMatrix");
+		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+		uniform = glGetUniformLocation (shader[0], "NormalMatrix");
+		glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
+		
+		shader_getuniform_light (shader[0], &light1);
+		
+		GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
+		glUniform1i (tex_id, 0);
+		
+		mdl_renderitp (l->mdl_frame, l->mdl_itp, &mdlfile[1]);
 			
-			/* disable program */
-			glUseProgram (0);
-		glPopMatrix ();
+		/* disable program */
+		glUseProgram (0);
 		
 		switch (l->state) {
 			case PLAYER_STATE_WALK:
 				if (l->mdl_frame > 4)
 					l->mdl_frame = 0;
 				break;
-			default:
+			case PLAYER_STATE_FIRE:
+				if (l->mdl_frame > 116)
+					l->mdl_frame = 110;
+				if (l->mdl_frame < 110)
+					l->mdl_frame = 110;
+				break;
+			case 0:
 				if (l->mdl_frame > 27)
 					l->mdl_frame = 17;
 				else if (l->mdl_frame < 17)
@@ -277,6 +365,10 @@ void gl_render_players (player_t *p)
 
 void gl_render_level ()
 {
+	camera_t *cam = camera_get ();
+	
+	glm::mat4 mdl_matrix;
+	
 	/* LEVEL RENDERING */
 	level_t *l = level_get ();
 
@@ -288,38 +380,56 @@ void gl_render_level ()
 			if (b == ' ')
 				continue;
 
-			glPushMatrix ();
-				glTranslatef (x*WALL_DIM, 0, y*WALL_DIM);
+			mdl_matrix = glm::translate (glm::vec3 (x*WALL_DIM, 0.0f, y*WALL_DIM));
 
+			/* enable program and set uniform variables */
+			glUseProgram (shader[2]);
+			
+			glm::mat4 tmp = cam->view * mdl_matrix;
 
-				switch (b) {
-					case '0':
-						glBindTexture (GL_TEXTURE_2D, tex_get (0));
-						break;
-					case '1':
-						glBindTexture (GL_TEXTURE_2D, tex_get (1));
-						break;
-					case '2':
-						glBindTexture (GL_TEXTURE_2D, tex_get (2));
-						break;
-				}
+			int uniform = glGetUniformLocation (shader[2], "PMatrix");
+			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
+			uniform = glGetUniformLocation (shader[2], "VMatrix");
+			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->view[0]);
+			uniform = glGetUniformLocation (shader[2], "MVMatrix");
+			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+			uniform = glGetUniformLocation (shader[2], "NormalMatrix");
+			glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
+			
+			shader_getuniform_light (shader[2], &light1);
+				
+			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
+			glUniform1i (tex_id, 0);
 
-				if (b == '0')
-					gl_render_floor ();
-				else
-					gl_render_wall ();
+			switch (b) {
+				case '0':
+					glBindTexture (GL_TEXTURE_2D, tex_get (0));
+					break;
+				case '1':
+					glBindTexture (GL_TEXTURE_2D, tex_get (1));
+					break;
+				case '2':
+					glBindTexture (GL_TEXTURE_2D, tex_get (2));
+					break;
+			}
+
+			if (b == '0')
+				gl_render_floor ();
+			else
+				gl_render_wall ();
 	
-			glPopMatrix ();
+			/* disable program */
+			glUseProgram (0);
 		}
 	}
 }
 
 void gl_render ()
 {
-	fps_stick = SDL_GetTicks ();
-	
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
+	
+	camera_update ();
 	
 	player_t *p = player_get ();
 
@@ -327,8 +437,8 @@ void gl_render ()
 	gl_render_weapon (p);
 
 	/* scene motion */
-	glRotatef (p->rot_y, 0, 1, 0);
-	glTranslatef (p->pos_x, 0, p->pos_y);
+	//glRotatef (p->rot_y, 0, 1, 0);
+	//glTranslatef (p->pos_x, 0, p->pos_y);
 
 	gl_render_players (p);
 
@@ -342,5 +452,7 @@ void gl_render ()
 		
 	if (fps_dtick < 1000.0f/FPS_MAX)
 		SDL_Delay (1000.0f/FPS_MAX - fps_dtick);
+	
+	fps_stick = SDL_GetTicks ();
 }
 

@@ -1,8 +1,8 @@
 LIBS=`sdl2-config --cflags --libs` -lGL -lGLEW -lGLU -lSDL2_image
 CFLAGS=
 
-shooter: main.o gl.o event.o level.o mouse.o kbd.o player.o tex.o logic.o mdl.o bot.o shader.o
-	$(CXX) $(CFLAGS) main.o gl.o event.o level.o mouse.o player.o kbd.o tex.o logic.o mdl.o bot.o shader.o $(LIBS_DIR) $(LIBS) -o shooter
+shooter: main.o gl.o event.o level.o mouse.o kbd.o player.o tex.o logic.o mdl.o bot.o shader.o camera.o
+	$(CXX) $(CFLAGS) main.o gl.o event.o level.o mouse.o player.o kbd.o tex.o logic.o mdl.o bot.o shader.o camera.o $(LIBS_DIR) $(LIBS) -o shooter
 #`sdl-config --cflags --libs`
 main.o: main.cpp shooter.h gl.h event.h level.h
 	$(CXX) $(CFLAGS) $(LIBS_DIR) main.cpp -c
@@ -40,5 +40,8 @@ mdl.o: mdl/mdl.cpp mdl/mdl.h shooter.h
 shader.o: shader.cpp shader.h shooter.h
 	$(CXX) $(CFLAGS) $(LIBS_DIR) shader.cpp -c
 
+camera.o: camera.cpp camera.h shooter.h
+	$(CXX) $(CFLAGS) $(LIBS_DIR) camera.cpp -c
+	
 clean:
 	rm -f *.o shooter

@@ -1,5 +1,6 @@
 #include "shooter.h"
 #include "player.h"
+#include "camera.h"
 #include "level.h"
 #include "logic.h"
 #include "mouse.h"
@@ -45,7 +46,8 @@ void logic_motion (player_t *p)
 {
 	/* MOUSE MOTION */
 	mouse_t *m = mouse_get ();
-
+	camera_t *c = camera_get ();
+	
 	float speed = 0;
 
 #ifdef ANDROID
@@ -81,6 +83,11 @@ void logic_motion (player_t *p)
 
 	p->pos_x += sinf (M_PI/180 * -p->rot_y) * (speed * PLAYER_SPEED);
 	p->pos_y += cosf (M_PI/180 * -p->rot_y) * (speed * PLAYER_SPEED);
+	
+	/* aktualizace kamery */
+	c->heading = p->rot_y;
+	c->position[0] = p->pos_x;
+	c->position[2] = p->pos_y;	
 }
 
 int logic_thread (void *unused)

@@ -27,6 +27,7 @@
  * gcc -Wall -ansi -lGL -lGLU -lglut mdl.c -o mdl
  */
 
+#include <GL/glew.h>
 #include "mdl.h"
 
 /* Table of precalculated normals */
@@ -286,16 +287,28 @@ void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
 	}
   
 	gles_verts = mdl->gles_verts;
-  
+
 	glEnableClientState (GL_VERTEX_ARRAY);
 	glEnableClientState (GL_NORMAL_ARRAY);
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
 
+	glEnableVertexAttribArray (0);
+	glEnableVertexAttribArray (1);
+	glEnableVertexAttribArray (2);
+	
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (3 * sizeof(GLfloat)), mdl->gles_verts);
+	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, (3 * sizeof(GLfloat)), mdl->gles_norms);
+	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (2 * sizeof(GLfloat)), mdl->gles_coords);
+	
 	glVertexPointer (3, GL_FLOAT, 0, mdl->gles_verts);
 	glNormalPointer (GL_FLOAT, 0, mdl->gles_norms);
 	glTexCoordPointer (2, GL_FLOAT, 0, mdl->gles_coords);
 
 	glDrawArrays (GL_TRIANGLES, 0, mdl->header.num_tris*3);
+	
+	glDisableVertexAttribArray (0);
+	glDisableVertexAttribArray (1);
+	glDisableVertexAttribArray (2);
 
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_NORMAL_ARRAY);
@@ -322,122 +335,3 @@ void mdl_animate (int start, int end, int *frame, float *interp)
 	*frame = start;
     }
 }
-#ifdef TEST
-void
-init (const char *filename)
-{
-  GLfloat lightpos[] = { 5.0f, 10.0f, 0.0f, 1.0f };
-
-  /* Initialize OpenGL context */
-  glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
-  glShadeModel (GL_SMOOTH);
-
-  glEnable (GL_DEPTH_TEST);
-  glEnable (GL_TEXTURE_2D);
-  glEnable (GL_LIGHTING);
-  glEnable (GL_LIGHT0);
-
-  glLightfv (GL_LIGHT0, GL_POSITION, lightpos);
-
-  /* Load MDL model file */
-  if (!mdl_read (filename, &mdlfile))
-      exit (EXIT_FAILURE);
-}
-
-void
-cleanup ()
-{
-  FreeModel (&mdlfile);
-}
-
-void
-reshape (int w, int h)
-{
-  if (h == 0)
-    h = 1;
-
-  glViewport (0, 0, (GLsizei)w, (GLsizei)h);
-
-  glMatrixMode (GL_PROJECTION);
-  glLoadIdentity ();
-  gluPerspective (45.0, w/(GLdouble)h, 0.1, 1000.0);
-
-  glMatrixMode (GL_MODELVIEW);
-  glLoadIdentity ();
-}
-
-void
-display ()
-{
-  static int n = 0;
-  static float interp = 0.0;
-  static double curent_time = 0;
-  static double last_time = 0;
-
-  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glLoadIdentity ();
-
-  last_time = curent_time;
-  curent_time = (double)glutGet (GLUT_ELAPSED_TIME) / 1000.0;
-
-  /* Animate model from frames 0 to num_frames-1 */
-  interp += 10 * (curent_time - last_time);
-  Animate (0, mdlfile.header.num_frames - 1, &n, &interp);
-
-  glTranslatef (0.0f, 0.0f, -100.0f);
-  glRotatef (-90.0f, 1.0, 0.0, 0.0);
-  glRotatef (-90.0f, 0.0, 0.0, 1.0);
-
-  /* Draw the model */
-  /* RenderFrame (n, mdlfile); */
-  mdl_renderitp (n, interp, &mdlfile);
-
-  glutSwapBuffers ();
-  glutPostRedisplay ();
-}
-
-void
-keyboard (unsigned char key, int x, int y)
-{
-  switch (key)
-    {
-    case '+':
-      mdlfile.iskin++;
-      break;
-
-    case '-':
-      mdlfile.iskin--;
-      break;
-
-    case 27: /* escape */
-      exit (0);
-      break;
-    }
-}
-
-int
-main (int argc, char *argv[])
-{
-  if (argc < 2)
-    {
-      fprintf (stderr, "usage: %s <filename.mdl>\n", argv[0]);
-      return 0;
-    }
-
-  glutInit (&argc, argv);
-  glutInitDisplayMode (GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize (640, 480);
-  glutCreateWindow ("MDL Model");
-
-  atexit (cleanup);
-  init (argv[1]);
-
-  glutReshapeFunc (reshape);
-  glutDisplayFunc (display);
-  glutKeyboardFunc (keyboard);
-
-  glutMainLoop ();
-
-  return 0;
-}
-#endif

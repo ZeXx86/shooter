@@ -48,7 +48,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>libs\SDL2_image-2.0.0;libs\SDL2-2.0.1;libs\SDL2_image-2.0.0\SDL2;libs\SDL2-2.0.1\SDL2;libs\glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs\SDL2_image-2.0.0;libs\SDL2-2.0.1;libs\SDL2_image-2.0.0\SDL2;libs\SDL2-2.0.1\SDL2;libs\glew;libs\glm-0.9.5.0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -75,6 +75,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bot.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="event.cpp" />
     <ClCompile Include="gl.cpp" />
     <ClCompile Include="kbd.cpp" />
@@ -89,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bot.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="gl.h" />
     <ClInclude Include="kbd.h" />

@@ -1,6 +1,10 @@
 #ifndef __player_h__
 #define __player_h__
 
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+
 #define PLAYER_STATE_WALK	0x1
 #define PLAYER_STATE_FIRE	0x2
 #define PLAYER_STATE_DEAD	0x4
@@ -13,11 +17,13 @@ typedef struct player_ctx {
 	unsigned char state;
 
 	unsigned hp;
-
+	
 	float pos_x;
 	float pos_y;
 
 	float rot_y;
+	
+	unsigned char ui_cmd;
 
 	int mdl_frame;
 	float mdl_itp;

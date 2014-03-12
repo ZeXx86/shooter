@@ -54,6 +54,9 @@
     <ClCompile Include="mdl\mdl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bot.h">
@@ -291,6 +294,9 @@
       <Filter>Header Files\SDL2</Filter>
     </ClInclude>
     <ClInclude Include="libs\sdl2_image-2.0.0\SDL2\SDL_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
