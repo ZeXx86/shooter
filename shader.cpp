@@ -43,25 +43,23 @@ void shader_getuniform_light (GLuint prog, light_t *l)
 
 char *shader_load (char *file, int *len)
 {
-	FILE *f = fopen (file, "r");
+	std::ifstream is ((const char *) file);
 	
-	if (!f)
+	if (!is)
 		return NULL;
 	
-	fseek (f, 0, SEEK_END);
-	int l  = ftell (f);
-	fseek (f, 0, SEEK_SET);
-	
+	is.seekg (0, is.end);
+	int l = is.tellg ();
+	is.seekg (0, is.beg);
+
 	char *buf = (char *) malloc (l + 1);
-	
-	fread (buf, l, 1, f);
-	
-	buf[l] = '\n';
-	
-	fclose (f);
+
+	is.read (buf, l);
 	
 	*len = l;
 	
+	is.close ();
+    
 	return buf;
 }
 
