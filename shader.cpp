@@ -67,7 +67,7 @@ char *shader_load (char *file, int *len)
 	is.read (buf, l);
 	
 	buf[l] = '\0';
-
+	printf ("file: %d - %s\n", l, file);
 	*len = l;
 	
 	is.close ();
