@@ -8,7 +8,7 @@
 #include "material.h"
 
 extern void shader_getuniform_light (GLuint prog, light_t *l);
-extern void shader_getuniform_material (GLuint prog, material_t *m);
+extern void shader_getuniform_material (GLuint prog, material_t *l);
 extern GLuint shader_init (char *file);
 
 #endif

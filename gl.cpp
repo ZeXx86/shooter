@@ -4,7 +4,6 @@
 #include "tex.h"
 #include "mdl/mdl.h"
 #include "gl.h"
-#include "light.h"
 #include "shader.h"
 #include "camera.h"
 
@@ -16,6 +15,8 @@ GLuint vbo_floor_id;
 GLuint shader[10];
 
 light_t light1;
+material_t mat1;
+material_t mat2;
 
 void gl_init_wall ();
 void gl_init_floor ();
@@ -63,6 +64,20 @@ bool gl_init ()
 	light1.position[3] = 1.0f;
  	
 	light1.name = strdup ("light");
+
+
+	mat1.ambient[0] = mat1.ambient[1] = mat1.ambient[2] = 0.5f;
+	mat1.ambient[3] = 1.0f;
+	mat1.diffuse[0] = mat1.diffuse[1] = mat1.diffuse[2] = 0.5f;
+	mat1.diffuse[3] = 1.0f;
+	mat1.name = strdup ("material");
+	
+	mat2.ambient[0] = mat2.ambient[1] = mat2.ambient[2] = 0.5f;
+	mat2.ambient[3] = 1.0f;
+	mat2.diffuse[0] = mat2.diffuse[1] = mat2.diffuse[2] = 0.5f;
+	mat2.diffuse[3] = 1.0f;
+	mat2.name = strdup ("material");
+	
 	
 	return true;
 }
@@ -335,6 +350,7 @@ void gl_render_players (player_t *p)
 		glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
 		
 		shader_getuniform_light (shader[0], &light1);
+		shader_getuniform_material (shader[0], &mat1);
 		
 		GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
 		glUniform1i (tex_id, 0);
@@ -400,6 +416,7 @@ void gl_render_level ()
 			glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
 			
 			shader_getuniform_light (shader[2], &light1);
+			shader_getuniform_material (shader[2], &mat2);
 				
 			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
 			glUniform1i (tex_id, 0);
