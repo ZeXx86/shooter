@@ -12,9 +12,20 @@ struct LightInfo {
 	int spot_cut;		//Specifies maximum spread angle of spotlight (180 = off).
 };
 
+struct MaterialInfo {
+	vec4 ambient;			//Material ambient reflectivity
+	vec4 diffuse;			//Material diffuse reflectivity
+	vec4 specular;			//Material specular reflectivity
+	float transparency;		//Material transparency factor
+	float shininess;		//Material shininess
+	int illumination;
+};
+
 layout(location = 0) out vec4 FragColor;
 
 uniform LightInfo light;
+uniform MaterialInfo material;
+
 // Values that stay constant for the whole mesh.
 uniform sampler2D TexSampler;
 

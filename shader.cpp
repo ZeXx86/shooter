@@ -1,6 +1,7 @@
 #include "shooter.h"
 #include "gl.h"
 #include "light.h"
+#include "material.h"
 #include "shader.h"
 #ifdef __WIN32__
 # include <io.h>
@@ -45,6 +46,40 @@ void shader_getuniform_light (GLuint prog, light_t *l)
 		glUniform1i (u, l->spot_cut);
 }
 
+void shader_getuniform_material (GLuint prog, material_t *l)
+{
+	int u;
+	char s[128];
+	unsigned l_len = strlen (l->name);
+	
+	memcpy (s, l->name, l_len);
+	s[l_len] = '.';
+
+	memcpy (s+l_len, "ambient\0", 8);
+	if ((u = glGetUniformLocation (prog, s)) >= 0)
+		glUniform4fv (u, 1, l->ambient);
+
+	memcpy (s+l_len, "diffuse\0", 8);
+	if ((u = glGetUniformLocation (prog, s)) >= 0)
+		glUniform4fv (u, 1, l->diffuse);
+
+	memcpy (s+l_len, "specular\0", 9);
+	if ((u = glGetUniformLocation (prog, s)) >= 0)
+		glUniform4fv (u, 1, l->specular);
+
+	memcpy (s+l_len, "transparency\0", 12);
+	if ((u = glGetUniformLocation (prog, s)) >= 0)
+		glUniform1f (u, l->transparency);
+
+	memcpy (s+l_len, "shininess\0", 10);
+	if ((u = glGetUniformLocation (prog, s)) >= 0)
+		glUniform1f (u, l->shininess);
+
+	memcpy (s+l_len, "illumination\0", 12);
+	if ((u = glGetUniformLocation (prog, s)) >= 0)
+		glUniform1i (u, l->illumination);
+}
+
 char *shader_load (char *file, int *len)
 {
 	std::ifstream is ((const char *) file);
@@ -67,7 +102,7 @@ char *shader_load (char *file, int *len)
 	is.read (buf, l);
 	
 	buf[l] = '\0';
-	printf ("file: %d - %s\n", l, file);
+
 	*len = l;
 	
 	is.close ();
