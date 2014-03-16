@@ -2,6 +2,10 @@
 #include "gl.h"
 #include "light.h"
 #include "shader.h"
+#ifdef __WIN32__
+# include <io.h>
+# include <sys/stat.h>
+#endif
 
 void shader_getuniform_light (GLuint prog, light_t *l)
 {
@@ -47,11 +51,17 @@ char *shader_load (char *file, int *len)
 	
 	if (!is)
 		return NULL;
-	
+#ifdef __WIN32__
+	struct __stat64 st;
+	if (_stat64 ((const char *) file, &st) != 0)
+		return NULL;
+
+	int l = st.st_size;
+#else
 	is.seekg (0, is.end);
 	int l = is.tellg ();
 	is.seekg (0, is.beg);
-
+#endif
 	char *buf = (char *) malloc (l + 1);
 
 	is.read (buf, l);
