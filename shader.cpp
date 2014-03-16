@@ -16,15 +16,16 @@ void shader_getuniform_light (GLuint prog, light_t *l)
 	
 	memcpy (s, l->name, l_len);
 	s[l_len] = '.';
-
+	l_len ++;
+	
 	memcpy (s+l_len, "position\0", 9);
 	if ((u = glGetUniformLocation (prog, s)) >= 0)
 		glUniform4fv (u, 1, l->position);
-
+	
 	memcpy (s+l_len, "ambient\0", 8);
 	if ((u = glGetUniformLocation (prog, s))>=0)
 		glUniform4fv (u, 1, l->ambient);
-
+	
 	memcpy (s+l_len, "diffuse\0", 8);
 	if ((u = glGetUniformLocation (prog, s))>=0)
 		glUniform4fv (u, 1, l->diffuse);
@@ -54,7 +55,8 @@ void shader_getuniform_material (GLuint prog, material_t *l)
 	
 	memcpy (s, l->name, l_len);
 	s[l_len] = '.';
-
+	l_len ++;
+	
 	memcpy (s+l_len, "ambient\0", 8);
 	if ((u = glGetUniformLocation (prog, s)) >= 0)
 		glUniform4fv (u, 1, l->ambient);
