@@ -56,6 +56,8 @@ char *shader_load (char *file, int *len)
 
 	is.read (buf, l);
 	
+	buf[l] = '\0';
+
 	*len = l;
 	
 	is.close ();
@@ -71,6 +73,16 @@ GLuint shader_compile (char *file, int type)
 	
 	if (!data)
 		return NULL;
+
+	if (!GLEW_VERSION_4_0) {
+		char *s_v = strstr (data, "#version 400 core");
+		if (s_v)
+			memcpy (s_v, "#version 300 es  ", 17);
+		
+		char *s_p = strstr (data, "//precision highp float;");
+		if (s_p)
+			memcpy (s_p, "precision highp float;  ", 24);
+	}
 
 	/* create shader object, set the source, and compile */
 	shader = glCreateShader (type);

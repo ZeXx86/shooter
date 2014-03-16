@@ -42,6 +42,11 @@ bool init ()
   	SDL_GLContext glcontext = SDL_GL_CreateContext (g_window);
 
 	glewInit ();
+
+	if (!GLEW_VERSION_4_0) {
+		printf ("WARNING -> your graphic card does not support OpenGL 4.0\n");
+		printf ("-> switching to GLSL 3.0 ES\n");
+	}
 	
 	if (!gl_init ())	// Inicializace OpenGL
 		return false;

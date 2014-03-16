@@ -1,5 +1,7 @@
 #version 400 core //compatibility
 
+//precision highp float; // Defines precision for float and float-derived (vector/matrix) types.
+
 struct LightInfo {
 	vec4 position;		//Light position   X,Y,Z, directional=0 OR positional=1
 	vec4 ambient;		//Light ambient color
@@ -43,5 +45,5 @@ void main()
       FragColor = vec4(0.0,0.0,0.0,1.0);
    }*/
    
-   FragColor = vec4(texture2D (TexSampler, UV).rgb,1.0);
+   FragColor = vec4(texture (TexSampler, UV).rgb,1.0);
 }
