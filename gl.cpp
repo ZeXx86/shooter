@@ -250,7 +250,7 @@ void gl_render_weapon (player_t *p)
 	}
 
 	if (p->mdl_frame < 5)
-		p->mdl_itp += 0.11f * (float) fps_dtick;
+		p->mdl_itp += 0.08f;
 
  	mdl_animate (0, mdlfile[0].header.num_frames - 1, &p->mdl_frame, &p->mdl_itp);
 
@@ -302,7 +302,7 @@ void gl_render_players (player_t *p)
 		if (p == l)
 			continue;
 
-		l->mdl_itp += 0.11f * (float) fps_dtick;
+		l->mdl_itp += 0.08f;
 
 	 	mdl_animate (0, mdlfile[1].header.num_frames - 1, &l->mdl_frame, &l->mdl_itp);
 	
@@ -426,6 +426,8 @@ void gl_render_level ()
 
 void gl_render ()
 {
+	
+	
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
 	
@@ -447,11 +449,15 @@ void gl_render ()
 	glFlush ();
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer
 	SDL_GL_SwapWindow (g_window);
-
+	//SDL_Delay (2);
 	fps_dtick = SDL_GetTicks () - fps_stick;
+	
+	if (fps_dtick < 1000.0f/FPS_MAX) {
+		float dly = 1000.0f/FPS_MAX - fps_dtick;
 		
-	if (fps_dtick < 1000.0f/FPS_MAX)
-		SDL_Delay (1000.0f/FPS_MAX - fps_dtick);
+		if (dly > 0.0f)
+			SDL_Delay (dly);
+	}
 	
 	fps_stick = SDL_GetTicks ();
 }
