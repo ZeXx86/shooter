@@ -43,8 +43,8 @@ bool init ()
 
 	glewInit ();
 
-	if (!GLEW_VERSION_4_0) {
-		printf ("WARNING -> your graphic card does not support OpenGL 4.0\n");
+	if (!GLEW_VERSION_3_3) {
+		printf ("WARNING -> your graphic card does not support OpenGL 3.3+\n");
 		printf ("-> switching to GLSL 3.0 ES\n");
 	}
 	

@@ -74,7 +74,7 @@ GLuint shader_compile (char *file, int type)
 	if (!data)
 		return NULL;
 
-	if (!GLEW_VERSION_4_0) {
+	if (!GLEW_VERSION_3_3) {
 		char *s_v = strstr (data, "#version 400 core");
 		if (s_v)
 			memcpy (s_v, "#version 300 es  ", 17);
