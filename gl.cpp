@@ -402,17 +402,12 @@ void gl_render_level ()
 			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
 			glUniform1i (tex_id, 0);
 
-
-			//-------------------------------
-			//TODO
-			//NACIST bummap texturu do shader_level.frag
-			//Bumpmap texture
-		/*	glClientActiveTexture (GL_TEXTURE1);
+			glActiveTexture (GL_TEXTURE1); 
 			tex_id  = glGetUniformLocation (shader[2], "TexBump");
 			glUniform1i (tex_id,1);
 			glBindTexture (GL_TEXTURE_2D, tex_get (3));
-			glClientActiveTexture (GL_TEXTURE0);*/
-			//------------------------------//
+
+			glActiveTexture (GL_TEXTURE0); 
 			
 			switch (b) {
 				case '0':
