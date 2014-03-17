@@ -226,9 +226,6 @@ FreeModel (struct mdl_model_t *mdl)
  */
 void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
 {
-#ifdef __WIN32__
-	interp = 0.0f;
-#endif
 	int i, j;
 	GLfloat s, t;
 	vec3_t norm, v;
