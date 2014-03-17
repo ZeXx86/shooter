@@ -1,7 +1,5 @@
 #include "shooter.h"
 #include "gl.h"
-#include "light.h"
-#include "material.h"
 #include "shader.h"
 #ifdef __WIN32__
 # include <io.h>

@@ -12,20 +12,9 @@ struct LightInfo {
 	int spot_cut;		//Specifies maximum spread angle of spotlight (180 = off).
 };
 
-struct MaterialInfo {
-	vec4 ambient;			//Material ambient reflectivity
-	vec4 diffuse;			//Material diffuse reflectivity
-	vec4 specular;			//Material specular reflectivity
-	float transparency;		//Material transparency factor
-	float shininess;		//Material shininess
-	int illumination;
-};
-
 layout(location = 0) out vec4 FragColor;
 
 uniform LightInfo light;
-uniform MaterialInfo material;
-
 // Values that stay constant for the whole mesh.
 uniform sampler2D TexSampler;
 
@@ -42,19 +31,20 @@ in vec2 UV;
 
 void main()
 {
-  /* vec3 N = normalize(ecNormal);
+   vec4 texColor = vec4(texture (TexSampler, UV).rgb,1.0);
+   FragColor = light.ambient  * vec4(texture (TexSampler, UV).rgb,1.0);
+   
+   vec3 N = normalize(ecNormal);
    vec3 L = normalize(ecLightDir);
-
+   
    float lambert = dot(N,L);
    
    if (lambert>0.0)   
    {
-      FragColor = vec4(1.0,0.0,0.0,1.0);
-   }      
-   else
-   {
-      FragColor = vec4(0.0,0.0,0.0,1.0);
-   }*/
-   
-   FragColor = vec4(texture (TexSampler, UV).rgb,1.0);
+		FragColor += light.diffuse * texColor * lambert;
+		vec3 E = normalize(ecViewDir);
+		vec3 R = normalize( 2.0 * dot(N, ecLightDir) * N - ecLightDir); 
+		float specular = pow(max(dot(R,E), 0.0), 40.0 );
+		FragColor += light.specular * texColor * specular;
+	}
 }
