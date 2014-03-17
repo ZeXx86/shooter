@@ -285,10 +285,6 @@ void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
   
 	gles_verts = mdl->gles_verts;
 
-	glEnableClientState (GL_VERTEX_ARRAY);
-	glEnableClientState (GL_NORMAL_ARRAY);
-	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
-
 	glEnableVertexAttribArray (0);
 	glEnableVertexAttribArray (1);
 	glEnableVertexAttribArray (2);
@@ -296,20 +292,12 @@ void mdl_renderitp (int n, float interp, const struct mdl_model_t *mdl)
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (3 * sizeof(GLfloat)), mdl->gles_verts);
 	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, (3 * sizeof(GLfloat)), mdl->gles_norms);
 	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (2 * sizeof(GLfloat)), mdl->gles_coords);
-	
-	glVertexPointer (3, GL_FLOAT, 0, mdl->gles_verts);
-	glNormalPointer (GL_FLOAT, 0, mdl->gles_norms);
-	glTexCoordPointer (2, GL_FLOAT, 0, mdl->gles_coords);
 
 	glDrawArrays (GL_TRIANGLES, 0, mdl->header.num_tris*3);
 	
 	glDisableVertexAttribArray (0);
 	glDisableVertexAttribArray (1);
 	glDisableVertexAttribArray (2);
-
-	glDisableClientState (GL_VERTEX_ARRAY);
-	glDisableClientState (GL_NORMAL_ARRAY);
-	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
 }
 
 /**
