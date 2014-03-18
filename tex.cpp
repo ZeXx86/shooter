@@ -119,12 +119,12 @@ bool tex_init ()
 	tex_cnt = 0;
 	tex_list = 0;
 
-	tex_create (PATH_DATA "largerblock3b3dim.jpg");
-	tex_create (PATH_DATA "oct20clava.jpg");
-	tex_create (PATH_DATA "iron01_c2.jpg");
-
-	//bumpmap
-	tex_create (PATH_DATA "floor_bumpmap.jpg");
+	tex_create (PATH_DATA "par9.jpg");
+	tex_create (PATH_DATA "par9_n.jpg");
+	tex_create (PATH_DATA "par11.jpg");
+	tex_create (PATH_DATA "par11_n.jpg");
+	tex_create (PATH_DATA "par13.jpg");
+	tex_create (PATH_DATA "par13_n.jpg");
 
 	return true;
 }

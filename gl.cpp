@@ -50,32 +50,37 @@ bool gl_init ()
 	gl_init_wall ();
 	gl_init_floor ();
 	
-	shader[0] = shader_init ("data/shader");
+	shader[0] = shader_init ("data/shader_bot");
 	shader[1] = shader_init ("data/shader_gun");
 	shader[2] = shader_init ("data/shader_level");
 
-	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.5f;
+	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.2f;
 	light1.ambient[3] = 1.0f;
-	
 	light1.diffuse[0] = light1.diffuse[1] = light1.diffuse[2] = 0.5f;
 	light1.diffuse[3] = 1.0f;
-
-	light1.position[0] = light1.position[1] = light1.position[2] = 3.0f;
-	light1.position[3] = 1.0f;
- 	
+	light1.specular[0] = light1.specular[1] = light1.specular[2] = 0.6f;
+	light1.specular[3] = 1.0f;
+	light1.position[0] = light1.position[2] = 3.0f;
+	light1.position[1] = 0.0f;
+	light1.position[3] = 1.0f; 	
 	light1.name = strdup ("light");
 
-
-	mat1.ambient[0] = mat1.ambient[1] = mat1.ambient[2] = 0.5f;
+	/* hraci */
+	mat1.ambient[0] = mat1.ambient[1] = mat1.ambient[2] = 0.9f;
 	mat1.ambient[3] = 1.0f;
-	mat1.diffuse[0] = mat1.diffuse[1] = mat1.diffuse[2] = 0.5f;
+	mat1.diffuse[0] = mat1.diffuse[1] = mat1.diffuse[2] = 0.6f;
 	mat1.diffuse[3] = 1.0f;
+	mat1.specular[0] = mat1.specular[1] = mat1.specular[2] = 0.5f;
+	mat1.specular[3] = 1.0f;
 	mat1.name = strdup ("material");
 	
-	mat2.ambient[0] = mat2.ambient[1] = mat2.ambient[2] = 1.0f;
+	/* level */
+	mat2.ambient[0] = mat2.ambient[1] = mat2.ambient[2] = 0.9f;
 	mat2.ambient[3] = 1.0f;
-	mat2.diffuse[0] = mat2.diffuse[1] = mat2.diffuse[2] = 0.5f;
+	mat2.diffuse[0] = mat2.diffuse[1] = mat2.diffuse[2] = 0.6f;
 	mat2.diffuse[3] = 1.0f;
+	mat2.specular[0] = mat2.specular[1] = mat2.specular[2] = 1.0f;
+	mat2.specular[3] = 1.0f;
 	mat2.name = strdup ("material");
 	
 	
@@ -400,28 +405,37 @@ void gl_render_level ()
 			shader_getuniform_material (shader[2], &mat2);
 				
 			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
+			GLuint bump_id  = glGetUniformLocation (shader[2], "TexBump");
 			glUniform1i (tex_id, 0);
+			glUniform1i (bump_id, 1);
 
+			/* bump map */
 			glActiveTexture (GL_TEXTURE1); 
-			tex_id  = glGetUniformLocation (shader[2], "TexBump");
-			glUniform1i (tex_id,1);
-			glBindTexture (GL_TEXTURE_2D, tex_get (3));
-
-			glActiveTexture (GL_TEXTURE0); 
+			switch (b) {
+				case '0':
+					glBindTexture (GL_TEXTURE_2D, tex_get (1));
+					break;
+				case '1':
+					glBindTexture (GL_TEXTURE_2D, tex_get (3));
+					break;
+				case '2':
+					glBindTexture (GL_TEXTURE_2D, tex_get (5));
+					break;
+			}
 			
+			/* texure */
+			glActiveTexture (GL_TEXTURE0); 
 			switch (b) {
 				case '0':
 					glBindTexture (GL_TEXTURE_2D, tex_get (0));
 					break;
 				case '1':
-					glBindTexture (GL_TEXTURE_2D, tex_get (1));
-					break;
-				case '2':
 					glBindTexture (GL_TEXTURE_2D, tex_get (2));
 					break;
+				case '2':
+					glBindTexture (GL_TEXTURE_2D, tex_get (4));
+					break;
 			}
-
-			
 
 			if (b == '0')
 				gl_render_floor ();

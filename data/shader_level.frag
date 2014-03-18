@@ -42,18 +42,18 @@ in vec2 UV;
 
 void main()
 {
-   vec4 texColor = vec4(texture (TexSampler, UV).rgb,1.0);
-   
-   vec3 N = texture2D (TexBump, UV).rgb + ecNormal;
-   N = normalize(N); 
-   vec3 L = normalize(ecLightDir);
-   
+	vec4 texColor = vec4 (texture (TexSampler, UV).rgb,1.0);
+	
+	vec3 N = ecNormal + (2.0 * texture (TexBump, UV).rgb - 1.0);
+	N = normalize(N); 
+	vec3 L = normalize(ecLightDir);
+	
 
-   FragColor = light.ambient  * material.ambient;  
-   float lambert = dot(N,L);
-   
-   if (lambert>0.0)   
-   {
+	FragColor = light.ambient  * material.ambient;  
+	float lambert = dot(N,L);
+	
+	if (lambert>0.0)   
+	{
 		FragColor += light.diffuse * material.diffuse * lambert;
 		vec3 E = normalize(ecViewDir);
 		vec3 R = normalize( 2.0 * dot(N, ecLightDir) * N - ecLightDir); 
@@ -61,6 +61,6 @@ void main()
 		FragColor += light.specular* material.specular * specular;
 	}
 
-	//FragColor *= texColor;
+	FragColor *= texColor;
 
 }
