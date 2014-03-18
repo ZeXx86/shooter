@@ -58,7 +58,7 @@ bool gl_init ()
 	light1.ambient[3] = 1.0f;
 	light1.diffuse[0] = light1.diffuse[1] = light1.diffuse[2] = 0.5f;
 	light1.diffuse[3] = 1.0f;
-	light1.specular[0] = light1.specular[1] = light1.specular[2] = 0.6f;
+	light1.specular[0] = light1.specular[1] = light1.specular[2] = 0.8f;
 	light1.specular[3] = 1.0f;
 	light1.position[0] = light1.position[2] = 3.0f;
 	light1.position[1] = 0.0f;
@@ -66,11 +66,11 @@ bool gl_init ()
 	light1.name = strdup ("light");
 
 	/* hraci */
-	mat1.ambient[0] = mat1.ambient[1] = mat1.ambient[2] = 0.9f;
+	mat1.ambient[0] = mat1.ambient[1] = mat1.ambient[2] = 2.0f;
 	mat1.ambient[3] = 1.0f;
-	mat1.diffuse[0] = mat1.diffuse[1] = mat1.diffuse[2] = 0.6f;
+	mat1.diffuse[0] = mat1.diffuse[1] = mat1.diffuse[2] = 0.8f;
 	mat1.diffuse[3] = 1.0f;
-	mat1.specular[0] = mat1.specular[1] = mat1.specular[2] = 0.5f;
+	mat1.specular[0] = mat1.specular[1] = mat1.specular[2] = 0.3f;
 	mat1.specular[3] = 1.0f;
 	mat1.name = strdup ("material");
 	
