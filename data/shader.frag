@@ -30,6 +30,7 @@ uniform MaterialInfo material;
 uniform sampler2D TexSampler;
 
 
+
 //The prefix ec means Eye Coordinates in the Eye Coordinate System
 in vec4 ecPosition;			
 in vec3 ecLightDir;

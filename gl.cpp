@@ -60,7 +60,7 @@ bool gl_init ()
 	light1.diffuse[0] = light1.diffuse[1] = light1.diffuse[2] = 0.5f;
 	light1.diffuse[3] = 1.0f;
 
-	light1.position[0] = light1.position[1] = light1.position[2] = 0.0f;
+	light1.position[0] = light1.position[1] = light1.position[2] = 3.0f;
 	light1.position[3] = 1.0f;
  	
 	light1.name = strdup ("light");
@@ -72,7 +72,7 @@ bool gl_init ()
 	mat1.diffuse[3] = 1.0f;
 	mat1.name = strdup ("material");
 	
-	mat2.ambient[0] = mat2.ambient[1] = mat2.ambient[2] = 0.5f;
+	mat2.ambient[0] = mat2.ambient[1] = mat2.ambient[2] = 1.0f;
 	mat2.ambient[3] = 1.0f;
 	mat2.diffuse[0] = mat2.diffuse[1] = mat2.diffuse[2] = 0.5f;
 	mat2.diffuse[3] = 1.0f;
@@ -85,41 +85,42 @@ bool gl_init ()
 void gl_init_wall ()
 {
 	const GLfloat buf[] = { 
+		//x, y, z, u ,v	, nx, ny, nz
 		// front
-		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
 		// back
-		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-		1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
 
-		1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 
 		// right
-		1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-		1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
 
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-		1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
 		// left
-		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-		-1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
-		-1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+		-1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
 
-		-1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f
+		-1.0f, 1.0f, 1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+		-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f
 	};
 
 	glGenBuffers (1, &vbo_wall_id);
@@ -130,13 +131,13 @@ void gl_init_wall ()
 void gl_init_floor ()
 {
 	const GLfloat buf[] = { 
-		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-		 1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0, 0.0f,
+		 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0, 0.0f,
+		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f, 0.0f, -1.0, 0.0f,
 
-		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f,
-		-1.0f, -1.0f,  1.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f
+		 1.0f, -1.0f,  1.0f, 1.0f, 1.0f, 0.0f, -1.0, 0.0f,
+		-1.0f, -1.0f,  1.0f, 0.0f, 1.0f, 0.0f, -1.0, 0.0f,
+		-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0, 0.0f
 	};
 
 	glGenBuffers (1, &vbo_floor_id);
@@ -193,17 +194,17 @@ void gl_render_wall ()
 
 	glEnableVertexAttribArray (0);
 	glEnableVertexAttribArray (1);
-	//glEnableVertexAttribArray (2);
+	glEnableVertexAttribArray (2);
 	
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
-	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
-	//glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), 0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
 	
 	glDrawArrays (GL_TRIANGLES, 0, 24);
 	
 	glDisableVertexAttribArray (0);
 	glDisableVertexAttribArray (1);
-	//glDisableVertexAttribArray (2);
+	glDisableVertexAttribArray (2);
 	
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
@@ -224,17 +225,17 @@ void gl_render_floor ()
 	
 	glEnableVertexAttribArray (0);
 	glEnableVertexAttribArray (1);
-	//glEnableVertexAttribArray (2);
+	glEnableVertexAttribArray (2);
 	
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
-	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
-	//glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), 0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
 	
 	glDrawArrays (GL_TRIANGLES, 0, 6);
 	
 	glDisableVertexAttribArray (0);
 	glDisableVertexAttribArray (1);
-	//glDisableVertexAttribArray (2);
+	glDisableVertexAttribArray (2);
 	
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
@@ -421,6 +422,18 @@ void gl_render_level ()
 			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
 			glUniform1i (tex_id, 0);
 
+
+			//-------------------------------
+			//TODO
+			//NACIST bummap texturu do shader_level.frag
+			//Bumpmap texture
+			//glClientActiveTexture (GL_TEXTURE1);
+			//tex_id  = glGetUniformLocation (shader[2], "TexBump");
+			//glUniform1i (tex_id,1);
+			//glBindTexture (GL_TEXTURE_2D, tex_get (3));
+			//glClientActiveTexture (GL_TEXTURE0);
+			//------------------------------//
+			
 			switch (b) {
 				case '0':
 					glBindTexture (GL_TEXTURE_2D, tex_get (0));
@@ -432,6 +445,8 @@ void gl_render_level ()
 					glBindTexture (GL_TEXTURE_2D, tex_get (2));
 					break;
 			}
+
+			
 
 			if (b == '0')
 				gl_render_floor ();

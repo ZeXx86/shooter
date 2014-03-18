@@ -1,4 +1,4 @@
-#version 400 core //compatibility
+#version 400 core
 
 //precision highp float; // Defines precision for float and float-derived (vector/matrix) types.
 
@@ -12,12 +12,23 @@ struct LightInfo {
 	int spot_cut;		//Specifies maximum spread angle of spotlight (180 = off).
 };
 
+struct MaterialInfo {
+	vec4 ambient;			//Material ambient reflectivity
+	vec4 diffuse;			//Material diffuse reflectivity
+	vec4 specular;			//Material specular reflectivity
+	float transparency;		//Material transparency factor
+	float shininess;		//Material shininess
+	int illumination;
+};
+
 layout(location = 0) out vec4 FragColor;
 
 uniform LightInfo light;
+uniform MaterialInfo material;
+
 // Values that stay constant for the whole mesh.
 uniform sampler2D TexSampler;
-
+uniform sampler2D TexBump;
 
 //The prefix ec means Eye Coordinates in the Eye Coordinate System
 in vec4 ecPosition;			
@@ -31,19 +42,22 @@ in vec2 UV;
 
 void main()
 {
-  /* vec3 N = normalize(ecNormal);
+   vec4 texColor = vec4(texture (TexSampler, UV).rgb,1.0);
+   FragColor = light.ambient  * material.ambient;
+   
+   vec3 N = texture2D (TexBump, UV).rgb + ecNormal;
+   N = normalize(N); 
    vec3 L = normalize(ecLightDir);
-
+   
    float lambert = dot(N,L);
    
    if (lambert>0.0)   
    {
-      FragColor = vec4(1.0,0.0,0.0,1.0);
-   }      
-   else
-   {
-      FragColor = vec4(0.0,0.0,0.0,1.0);
-   }*/
-   
-   FragColor = vec4(texture (TexSampler, UV).rgb,1.0);
+		FragColor += light.diffuse * material.diffuse * lambert;
+		vec3 E = normalize(ecViewDir);
+		vec3 R = normalize( 2.0 * dot(N, ecLightDir) * N - ecLightDir); 
+		float specular = pow(max(dot(R,E), 0.0), 40.0 );
+		FragColor += light.specular* material.specular * specular;
+	}
+	FragColor *= texColor;
 }

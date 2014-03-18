@@ -11,7 +11,8 @@ struct LightInfo {
 };
 
 layout(location = 0) in vec3 VertexPosition;
-layout(location = 1) in vec2 VertexTexCoord;
+layout(location = 1) in vec3 VertexNormal;
+layout(location = 2) in vec2 VertexTexCoord;
 
 uniform mat4 PMatrix;		//Camera projection matrix
 uniform mat4 VMatrix;		//Camera view matrix
@@ -31,6 +32,9 @@ out vec2 UV;
 void main()
 {
     ecPosition = MVMatrix * vec4(VertexPosition, 1.0);
+    ecLightDir   = vec3(VMatrix * light.position - ecPosition);
+    ecNormal =  NormalMatrix * VertexNormal;
+    ecViewDir = -vec3(ecPosition);
     UV = VertexTexCoord;
     gl_Position  = PMatrix * ecPosition;
 }

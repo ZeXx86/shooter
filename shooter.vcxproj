@@ -161,6 +161,7 @@
     <ClInclude Include="libs\SDL2-2.0.1\SDL2\SDL_video.h" />
     <ClInclude Include="libs\sdl2_image-2.0.0\SDL2\SDL_image.h" />
     <ClInclude Include="logic.h" />
+    <ClInclude Include="material.h" />
     <ClInclude Include="mdl\anorms.h" />
     <ClInclude Include="mdl\colormap.h" />
     <ClInclude Include="mdl\mdl.h" />

@@ -123,6 +123,9 @@ bool tex_init ()
 	tex_create (PATH_DATA "oct20clava.jpg");
 	tex_create (PATH_DATA "iron01_c2.jpg");
 
+	//bumpmap
+	tex_create (PATH_DATA "floor_bumpmap.jpg");
+
 	return true;
 }
 
