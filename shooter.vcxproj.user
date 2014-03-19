@@ -4,6 +4,11 @@
     <LocalDebuggerEnvironment>PATH=%PATH%;$(ProjectDir)\libs\SDL2-2.0.1\lib\x86;$(ProjectDir)\libs\SDL2_image-2.0.0\lib\x86;$(ProjectDir)\libs\glew\lib
 $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerDebuggerType>GPUOnly</LocalDebuggerDebuggerType>
+    <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerEnvironment>PATH=%PATH%;$(ProjectDir)\libs\SDL2-2.0.1\lib\x86;$(ProjectDir)\libs\SDL2_image-2.0.0\lib\x86;$(ProjectDir)\libs\glew\lib
+$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
