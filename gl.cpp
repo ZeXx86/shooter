@@ -87,6 +87,11 @@ bool gl_init ()
 	return true;
 }
 
+//Method stubs for particle system
+void gl_init_particle(){}
+void gl_render_particle(){}
+void gl_render_particle_system(){}
+
 void gl_init_wall ()
 {
 	const GLfloat buf[] = { 
