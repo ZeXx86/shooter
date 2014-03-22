@@ -1,3 +1,4 @@
+#include "particle.h"
 #include "shooter.h"
 #include "player.h"
 #include "event.h"
@@ -50,12 +51,15 @@ bool init ()
 	
 	if (!gl_init ())	// Inicializace OpenGL
 		return false;
-
+	
 	if (!tex_init ()) {
 		LOGI ("Unable to initialize Texture subsystem\n");
 		return false;
 	}
 
+	if (!particle_init ())
+		return false;
+	
 	gl_resize (WIN_WIDTH, WIN_HEIGHT);// Nastavi perspektivu
 #ifndef ANDROID
 	SDL_ShowCursor (SDL_DISABLE);

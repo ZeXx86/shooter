@@ -10,15 +10,14 @@
 
 static unsigned fps_stick, fps_dtick;
 
-GLuint vbo_wall_id;
-GLuint vbo_floor_id;
-GLuint vbo_particle_id;
+static GLuint vbo_wall_id;
+static GLuint vbo_floor_id;
 
-GLuint shader[10];
+static GLuint shader[10];
 
-light_t light1;
-material_t mat1;
-material_t mat2;
+static light_t light1;
+static material_t mat1;
+static material_t mat2;
 
 void gl_init_wall ();
 void gl_init_floor ();
@@ -88,44 +87,6 @@ bool gl_init ()
 	
 	return true;
 }
-
-//Method stubs for particle system
-void gl_init_particle(){
-	const GLfloat buf[] = { 
-		//x, y, z, u ,v	, nx, ny, nz
-		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-	};
-	glGenBuffers (1, &vbo_particle_id);
-	glBindBuffer (GL_ARRAY_BUFFER, vbo_particle_id);
-	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
-}
-void gl_render_particle(){
-	glBindBuffer (GL_ARRAY_BUFFER, vbo_particle_id);
-
-	glEnableVertexAttribArray (0);
-	glEnableVertexAttribArray (1);
-	glEnableVertexAttribArray (2);
-	
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), 0);
-	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
-	glVertexAttribPointer (2, 3, GL_FLOAT, GL_FALSE, (8 * sizeof(GLfloat)), (GLvoid *) (5 * sizeof(GLfloat)));
-	
-	glDrawArrays (GL_TRIANGLES, 0, 6);
-	
-	glDisableVertexAttribArray (0);
-	glDisableVertexAttribArray (1);
-	glDisableVertexAttribArray (2);
-	
-	glBindBuffer (GL_ARRAY_BUFFER, 0);
-}
-//TODO
-void gl_render_particle_system(){}
 
 void gl_init_wall ()
 {
