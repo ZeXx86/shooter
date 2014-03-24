@@ -6,6 +6,7 @@
 #include "gl.h"
 #include "shader.h"
 #include "camera.h"
+#include "particle.h"
 
 
 static unsigned fps_stick, fps_dtick;
@@ -457,17 +458,19 @@ void gl_render ()
 	camera_update ();
 	
 	player_t *p = player_get ();
-
+	
 	/* Weapon */
 	gl_render_weapon (p);
 
 	/* scene motion */
 	//glRotatef (p->rot_y, 0, 1, 0);
 	//glTranslatef (p->pos_x, 0, p->pos_y);
-
+	
 	gl_render_players (p);
 
 	gl_render_level ();
+	
+	particle_system_render ();
 
 	glFlush ();
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer

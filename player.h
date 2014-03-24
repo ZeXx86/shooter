@@ -1,10 +1,6 @@
 #ifndef __player_h__
 #define __player_h__
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-
 #define PLAYER_STATE_WALK	0x1
 #define PLAYER_STATE_FIRE	0x2
 #define PLAYER_STATE_DEAD	0x4
