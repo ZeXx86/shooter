@@ -132,9 +132,7 @@ int logic_thread (void *unused)
 
 		if (p->state & PLAYER_STATE_FIRE)
 		{
-			player_t* p = player_get();	
-			particle_reset(4.0f,0.0f,4.0f);
-			//particle_reset(p->pos_x,0.0f,p->pos_y);
+			particle_reset(-p->pos_x, 0.0f, -p->pos_y, p->rot_y+180, 0);
 		}
 
 		SDL_Delay (1);

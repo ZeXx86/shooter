@@ -10,7 +10,7 @@ typedef struct {
 	float t; //cas
 } particle_t;
 
-extern void particle_reset (float x, float y, float z);
+extern void particle_reset (float x, float y, float z, float u, float v);
 extern void particle_update_ballistic ();
 extern void particle_system_render ();
 extern bool particle_init ();
