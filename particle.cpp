@@ -1,4 +1,5 @@
 #include "shooter.h"
+#include "player.h"
 #include "level.h"
 #include "tex.h"
 #include "gl.h"
@@ -28,6 +29,8 @@ bool particle_init ()
 	
 
 	glEnable (GL_POINT_SPRITE);
+	glEnable (GL_PROGRAM_POINT_SIZE);
+	
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
 
 	return true;
@@ -57,7 +60,6 @@ void particle_reset (float x, float y, float z, float u, float v)
 
 void particle_update_ballistic ()
 {
-
 	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
 		part_list[i].x += sinf (M_PI/180 * -part_list[i].u) * part_list[i].s;
 		part_list[i].z += cosf (M_PI/180 * -part_list[i].u) * part_list[i].s;
@@ -81,7 +83,7 @@ void particle_render (float size)
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, sizeof (particle_t), part_list);
 	glVertexAttribPointer (1, 1, GL_FLOAT, GL_FALSE, sizeof (particle_t), (void *) ( part_list+3*sizeof (float)));	
 
-	glPointSize (size);
+	//glPointSize (size);
 	glDrawArrays (GL_POINTS, 0, PARTICLE_LIST_SIZE);
 	
 	glDisableVertexAttribArray (0);
@@ -111,6 +113,12 @@ void particle_system_render ()
 	uniform = glGetUniformLocation (shader[0], "NormalMatrix");
 	glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
 
+	player_t *p = player_get ();
+	
+	glm::vec3 campos = glm::vec3 (-p->pos_x, 0, -p->pos_y);
+	uniform = glGetUniformLocation (shader[0], "CameraPos");
+	glUniform3fv (uniform, 1, (float*)&campos[0]);
+	
 	GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
 	glUniform1i (tex_id, 0);
 

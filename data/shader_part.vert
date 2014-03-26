@@ -17,14 +17,18 @@ uniform mat4 PMatrix;		//Camera projection matrix
 uniform mat4 VMatrix;		//Camera view matrix
 uniform mat4 MVMatrix;		//VMatrix * Model matrix
 uniform mat3 NormalMatrix;	//MVMatrix ... -> converted into normal matrix (inverse transpose operation)
+uniform vec3 CameraPos;
 
 out float ecPartLife;
 out vec4 ecPosition;
 
 void main()
 {
-    ecPosition = MVMatrix * vec4(VertexPosition, 1.0);
+    float dist = distance (CameraPos, VertexPosition);
+
+    ecPosition = MVMatrix * vec4 (VertexPosition, 1.0);
     ecPartLife = PartLife;
 
+    gl_PointSize = 16 / dist;
     gl_Position  = PMatrix * ecPosition;
 }
