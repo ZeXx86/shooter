@@ -1,3 +1,5 @@
 *.sln text eol=crlf
 *.frag text eol=lf
 *.vert text eol=lf
+*.cpp text
+*.h text
