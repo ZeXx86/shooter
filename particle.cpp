@@ -12,7 +12,7 @@ static GLuint shader[1];
 
 static particle_t *part_list;
 
-#define PARTICLE_LIST_SIZE	128
+#define PARTICLE_LIST_SIZE	208
 
 bool particle_init ()
 {
