@@ -28,9 +28,12 @@ layout(location = 0) out vec4 FragColor;
 uniform sampler2D TexSampler;
 
 in vec4 ecPosition;			
-
+in float ecPartLife;
 
 void main()
 {
-	FragColor = texture(TexSampler, gl_PointCoord);
+	if (ecPartLife > 0.0)
+		FragColor = texture(TexSampler, gl_PointCoord);
+	else
+		FragColor = vec4 (0.0);
 }

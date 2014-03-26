@@ -23,18 +23,54 @@ bool particle_init ()
 	if (!part_list)
 		return false;
 	
-	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
-		part_list[i].x = 5+(float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
-		part_list[i].y = (float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
-		part_list[i].z = 5+(float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
+/*
+% Data
+n = 10000;
+radius = rand;
+xc = randn;
+yc = randn;
+% Engine
+theta = rand(1,n)*(2*pi);
+r = sqrt(rand(1,n))*radius;
+x = xc + r.*cos(theta);
+y = yc + r.*sin(theta);
+*/
+	float radius = 6;
 
-		part_list[i].l = 0.0f;
+	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
+		part_list[i].x = 5;
+		part_list[i].y = 0;
+		part_list[i].z = 5;
+
+		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
+		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * radius;
+
+		part_list[i].u = r * cosf (theta);
+		part_list[i].v = r * sinf (theta);
+
+		part_list[i].l = 1.0f;
+		
 	}
 
 	glEnable (GL_POINT_SPRITE);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
 
 	return true;
+}
+
+void particle_update_ballistic ()
+{
+	float speed = 0.005f;
+
+	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
+		part_list[i].x += sinf (M_PI/180 * -part_list[i].u) * (speed);
+		part_list[i].z += cosf (M_PI/180 * -part_list[i].u) * (speed);
+		part_list[i].y += sinf (M_PI/180 * -part_list[i].v) * (speed);
+
+		if (part_list[i].l > 0)
+			part_list[i].l -= 0.001f;
+		
+	}
 }
 
 void particle_render (float size)
@@ -44,13 +80,16 @@ void particle_render (float size)
 	glDepthMask (GL_FALSE);
 	
 	glEnableVertexAttribArray (0);
+	glEnableVertexAttribArray (1);
 		
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, sizeof (particle_t), part_list);
-	
+	glVertexAttribPointer (1, 1, GL_FLOAT, GL_FALSE, sizeof (particle_t), (void *) ((void *) part_list+3*sizeof (float)));	
+
 	glPointSize (size);
 	glDrawArrays (GL_POINTS, 0, PARTICLE_LIST_SIZE);
 	
 	glDisableVertexAttribArray (0);
+	glDisableVertexAttribArray (1);
 	glDisable (GL_BLEND);
 	glDepthMask (GL_TRUE);
 }
@@ -78,8 +117,8 @@ void particle_system_render ()
 
 	GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
 	glUniform1i (tex_id, 0);
-		
-	particle_render (32.0f);
+
+	particle_render (16.0f);
 			
 	/* disable program */
 	glUseProgram (0);

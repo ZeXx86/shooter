@@ -11,17 +11,20 @@ struct LightInfo {
 };
 
 layout(location = 0) in vec3 VertexPosition;
+layout(location = 1) in float PartLife;
 
 uniform mat4 PMatrix;		//Camera projection matrix
 uniform mat4 VMatrix;		//Camera view matrix
 uniform mat4 MVMatrix;		//VMatrix * Model matrix
 uniform mat3 NormalMatrix;	//MVMatrix ... -> converted into normal matrix (inverse transpose operation)
 
+out float ecPartLife;
 out vec4 ecPosition;
 
 void main()
 {
     ecPosition = MVMatrix * vec4(VertexPosition, 1.0);
+    ecPartLife = PartLife;
 
     gl_Position  = PMatrix * ecPosition;
 }

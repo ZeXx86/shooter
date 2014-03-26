@@ -1,3 +1,4 @@
+#include "particle.h"
 #include "shooter.h"
 #include "player.h"
 #include "camera.h"
@@ -124,7 +125,10 @@ int logic_thread (void *unused)
 							logic_collision (r, fx*WALL_DIM, fy*WALL_DIM);
 				}
 			}
-		}	
+		}
+
+		/* PARTICLE UPDATE */
+		particle_update_ballistic ();
 
 		SDL_Delay (1);
 	}
