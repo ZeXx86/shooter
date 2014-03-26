@@ -24,7 +24,7 @@ bool particle_init ()
 		return false;
 	
 	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
-		part_list[i].x = 5+(float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
+		part_list[i].x = 3+(float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
 		part_list[i].y = (float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
 		part_list[i].z = 5+(float) ((rand () % RAND_MAX) / ((float) RAND_MAX));
 
