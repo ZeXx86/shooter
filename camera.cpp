@@ -33,14 +33,14 @@ bool camera_init (int viewport_x, int viewport_y, int window_width, int window_h
 	cam.window_height = window_height;
 	
 	cam.aspect = double (window_width) / double (window_height);
-	
+
 	cam.near_clip = NEAR_PLANE;
 	cam.far_clip = FAR_PLANE;
 	
 	cam.fov = 70;
 	
 	// Projection matrix : 70° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	cam.projection = glm::perspective (cam.fov, 4.0f / 3.0f, 0.1f, 100.0f);
+	cam.projection = glm::perspective (cam.fov, (float) cam.aspect, 0.1f, 100.0f);
 	// Camera matrix
 	/*cam.view       = glm::lookAt(
 		glm::vec3(0,0,0.1f), // Camera is at (4,3,3), in World Space

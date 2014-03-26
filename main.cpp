@@ -36,8 +36,20 @@ bool init ()
   	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   	SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 1);
 
+	SDL_DisplayMode current;
+
+	// Get current display mode of all displays.
+	for (int i = 0; i < SDL_GetNumVideoDisplays (); ++ i) {  
+		int ret = SDL_GetCurrentDisplayMode(i, &current);
+
+	    	if (ret != 0)
+	    	  	printf ("Could not get display mode for video display #%d: %s", i, SDL_GetError ());
+	    	else 
+	      		printf ("Display #%d: current display mode is %dx%dpx @ %dhz. \n", i, current.w, current.h, current.refresh_rate);
+
+	  }
 	g_window = SDL_CreateWindow ("Shooter", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-						WIN_WIDTH, WIN_HEIGHT, WIN_FLAGS);
+						current.w, current.h, WIN_FLAGS);
   
   	// Create an OpenGL context associated with the window.
   	SDL_GLContext glcontext = SDL_GL_CreateContext (g_window);
@@ -60,7 +72,7 @@ bool init ()
 	if (!particle_init ())
 		return false;
 	
-	gl_resize (WIN_WIDTH, WIN_HEIGHT);// Nastavi perspektivu
+	gl_resize (current.w, current.h);// Nastavi perspektivu
 #ifndef ANDROID
 	SDL_ShowCursor (SDL_DISABLE);
 	SDL_SetWindowGrab (g_window, SDL_TRUE);
