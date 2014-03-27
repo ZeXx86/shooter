@@ -23,36 +23,8 @@ bool particle_init ()
 	if (!part_list)
 		return false;
 	
-/*
-% Data
-n = 10000;
-radius = rand;
-xc = randn;
-yc = randn;
-% Engine
-theta = rand(1,n)*(2*pi);
-r = sqrt(rand(1,n))*radius;
-x = xc + r.*cos(theta);
-y = yc + r.*sin(theta);
-*/
-	float radius = 6;
-
-	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
-		part_list[i].x = 5;
-		part_list[i].y = 0;
-		part_list[i].z = 5;
-
-		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
-		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * radius;
-
-		part_list[i].u = r * cosf (theta);
-		part_list[i].v = r * sinf (theta);
-
-		part_list[i].s = 0.0005*((rand () % RAND_MAX) / (float) RAND_MAX);
-		part_list[i].t =0.0f;
-		part_list[i].l = 1.0f;
-		
-	}
+	particle_reset();
+	
 
 	glEnable (GL_POINT_SPRITE);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
@@ -67,7 +39,7 @@ void particle_update_ballistic ()
 		part_list[i].x += sinf (M_PI/180 * -part_list[i].u) * part_list[i].s;
 		part_list[i].z += cosf (M_PI/180 * -part_list[i].u) * part_list[i].s;
 		part_list[i].y += sinf (M_PI/180 * -part_list[i].v) * part_list[i].s - pow(part_list[i].t,2.0f);
-		part_list[i].t +=0.000001;
+		part_list[i].t +=0.00001;
 		
 		
 
@@ -96,6 +68,27 @@ void particle_render (float size)
 	glDisableVertexAttribArray (1);
 	glDisable (GL_BLEND);
 	glDepthMask (GL_TRUE);
+}
+
+void particle_reset ()
+{
+	float radius = 6;
+
+	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
+		part_list[i].x = 5;
+		part_list[i].y = 0;
+		part_list[i].z = 5;
+
+		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
+		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * radius;
+
+		part_list[i].u = r * cosf (theta);
+		part_list[i].v = r * sinf (theta);
+
+		part_list[i].s = 0.005*((rand () % RAND_MAX) / (float) RAND_MAX);
+		part_list[i].t =0.0f;
+		part_list[i].l = 1.0f;	
+	}
 }
 
 void particle_system_render ()

@@ -130,6 +130,12 @@ int logic_thread (void *unused)
 		/* PARTICLE UPDATE */
 		particle_update_ballistic ();
 
+		if (p->state & PLAYER_STATE_FIRE)
+		{
+			particle_reset();
+		
+		}
+
 		SDL_Delay (1);
 	}
 
