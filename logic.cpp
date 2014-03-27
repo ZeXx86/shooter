@@ -131,8 +131,36 @@ int logic_thread (void *unused)
 		particle_update_ballistic ();
 
 		if (p->state & PLAYER_STATE_FIRE)
-		{
-			particle_reset(-p->pos_x, 0.0f, -p->pos_y, p->rot_y+180, 0);
+		{		
+			//primka ax+by+c=0
+			float a1, b1, a2, b2, c1, c2, x, y;	
+			for (r = player_list.next; r != &player_list; r = r->next)
+			{
+				if (r != p){
+			
+					a1=cosf(p->rot_y+90);
+					b1=sinf(p->rot_y+90);
+					c1=a1*p->pos_x+b1*p->pos_y;
+			
+					a2 = cosf(r->rot_y);
+					a2 = sinf(r->rot_y);
+					c2=a2*r->pos_x+b2*r->pos_y;
+
+					y=((a2*c1)/a1-c2)/(-1*(a2*b1)/a1+b2);
+					x=(-b1*y-c1)/(a1);
+
+					float sigma = glm::distance(glm::vec2(x,y),glm::vec2(-r->pos_x,-r->pos_y));
+
+					//HIT
+					if(sigma<1.0f)
+					{
+						float distance = glm::distance(glm::vec2(-r->pos_x,-r->pos_y),glm::vec2(-p->pos_x,-p->pos_y));
+						printf("%f %f\n",sigma,distance);
+						particle_reset(-p->pos_x, 0.0f, -p->pos_y, p->rot_y+180, 0);
+						break;
+					}
+				}
+			}
 		}
 
 		SDL_Delay (1);
