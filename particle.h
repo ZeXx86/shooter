@@ -6,6 +6,8 @@ typedef struct {
 	float l;	// lifetime castice
 
 	float u, v;	// smer letu castice [uhel]
+	float s; // rychlost
+	float t; //cas
 } particle_t;
 
 

@@ -12,7 +12,7 @@ static GLuint shader[1];
 
 static particle_t *part_list;
 
-#define PARTICLE_LIST_SIZE	208
+#define PARTICLE_LIST_SIZE	1024
 
 bool particle_init ()
 {
@@ -48,6 +48,8 @@ y = yc + r.*sin(theta);
 		part_list[i].u = r * cosf (theta);
 		part_list[i].v = r * sinf (theta);
 
+		part_list[i].s = 0.0005*((rand () % RAND_MAX) / (float) RAND_MAX);
+		part_list[i].t =0.0f;
 		part_list[i].l = 1.0f;
 		
 	}
@@ -60,12 +62,14 @@ y = yc + r.*sin(theta);
 
 void particle_update_ballistic ()
 {
-	float speed = 0.005f;
 
 	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
-		part_list[i].x += sinf (M_PI/180 * -part_list[i].u) * (speed);
-		part_list[i].z += cosf (M_PI/180 * -part_list[i].u) * (speed);
-		part_list[i].y += sinf (M_PI/180 * -part_list[i].v) * (speed);
+		part_list[i].x += sinf (M_PI/180 * -part_list[i].u) * part_list[i].s;
+		part_list[i].z += cosf (M_PI/180 * -part_list[i].u) * part_list[i].s;
+		part_list[i].y += sinf (M_PI/180 * -part_list[i].v) * part_list[i].s - pow(part_list[i].t,2.0f);
+		part_list[i].t +=0.000001;
+		
+		
 
 		if (part_list[i].l > 0)
 			part_list[i].l -= 0.001f;
@@ -83,7 +87,7 @@ void particle_render (float size)
 	glEnableVertexAttribArray (1);
 		
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, sizeof (particle_t), part_list);
-	glVertexAttribPointer (1, 1, GL_FLOAT, GL_FALSE, sizeof (particle_t), (void *) ((void *) part_list+3*sizeof (float)));	
+	glVertexAttribPointer (1, 1, GL_FLOAT, GL_FALSE, sizeof (particle_t), (void *) ( part_list+3*sizeof (float)));	
 
 	glPointSize (size);
 	glDrawArrays (GL_POINTS, 0, PARTICLE_LIST_SIZE);
