@@ -23,7 +23,8 @@ bool particle_init ()
 	if (!part_list)
 		return false;
 	
-	particle_reset();
+	//prvotni umisteni generatoru castic na pozici 5,0,5
+	particle_reset(5.f,0.f,5.f);
 	
 
 	glEnable (GL_POINT_SPRITE);
@@ -39,7 +40,7 @@ void particle_update_ballistic ()
 		part_list[i].x += sinf (M_PI/180 * -part_list[i].u) * part_list[i].s;
 		part_list[i].z += cosf (M_PI/180 * -part_list[i].u) * part_list[i].s;
 		part_list[i].y += sinf (M_PI/180 * -part_list[i].v) * part_list[i].s - pow(part_list[i].t,2.0f);
-		part_list[i].t +=0.00001;
+		part_list[i].t +=0.00005;
 		
 		
 
@@ -70,14 +71,14 @@ void particle_render (float size)
 	glDepthMask (GL_TRUE);
 }
 
-void particle_reset ()
+void particle_reset (float x, float y, float z)
 {
-	float radius = 6;
+	float radius = 20;
 
 	for (int i = 0; i < PARTICLE_LIST_SIZE; i ++) {
-		part_list[i].x = 5;
-		part_list[i].y = 0;
-		part_list[i].z = 5;
+		part_list[i].x = x;
+		part_list[i].y = y;
+		part_list[i].z = z;
 
 		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
 		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * radius;
