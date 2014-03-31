@@ -3,6 +3,7 @@
 
 typedef struct {
 	float x, y, z;	// pozice castice
+	float sx, sy, sz; // rychlost castic v danych smerech
 	float l;	// lifetime castice
 
 	float u, v;	// smer letu castice [uhel]

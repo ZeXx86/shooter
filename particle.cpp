@@ -13,7 +13,7 @@ static GLuint shader[1];
 
 static part_sys_t part_sys[1];
 
-#define PARTICLE_LIST_SIZE	1024
+#define PARTICLE_LIST_SIZE	2048
 
 part_sys_t *part_sys_get (unsigned id)
 {
@@ -65,6 +65,8 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v)
 		s->list[i].x = x;
 		s->list[i].y = y;
 		s->list[i].z = z;
+		
+		s->list[i].sz = s->list[i].sy = s->list[i].sx = s->list[i].s = 0.005f * (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
 
 		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
 		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * radius;
@@ -75,9 +77,6 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v)
 		s->list[i].s = 0.005f * (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
 		s->list[i].t = 0.0f;
 		s->list[i].l = (float) (rand () % s->div_factor) / s->div_factor;
-		
-		//if (s->list[i].l == 1.0f)
-		//	s->active ++;
 	}
 }
 
@@ -85,9 +84,12 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v)
 void particle_update_ballistic (part_sys_t *s)
 {
 	for (int i = 0; i < s->count; i ++) {
-		s->list[i].x += sinf (M_PI/180 * -s->list[i].u) * s->list[i].s;
-		s->list[i].z += cosf (M_PI/180 * -s->list[i].u) * s->list[i].s;
-		s->list[i].y += sinf (M_PI/180 * -s->list[i].v) * s->list[i].s - pow (s->list[i].t, 2.0f);
+		s->list[i].sx = s->list[i].sz = cosf (M_PI/180 * -s->list[i].u) * s->list[i].s;
+		s->list[i].sy = sinf (M_PI/180 * - s->list[i].v) * s->list[i].s - s->list[i].t;
+		
+		s->list[i].x += sinf (M_PI/180 * -s->list[i].u) * s->list[i].sx;
+		s->list[i].z += cosf (M_PI/180 * -s->list[i].u) * s->list[i].sz;
+		s->list[i].y += sinf (M_PI/180 * -s->list[i].v) * s->list[i].sy - pow (s->list[i].t, 2.0f);
 		s->list[i].t += 0.0001f;
 
 		if (s->list[i].l > 0)
