@@ -127,8 +127,10 @@ int logic_thread (void *unused)
 			}
 		}
 
+		part_sys_t *part_blood = part_sys_get (0);
+		
 		/* PARTICLE UPDATE */
-		particle_update_ballistic ();
+		particle_update_ballistic (part_blood);
 
 		if (p->state & PLAYER_STATE_FIRE) {		
 			//primka ax+by+c=0
@@ -152,7 +154,7 @@ int logic_thread (void *unused)
 					if (sigma<1.0f) {
 						//float distance = glm::distance(glm::vec2(-r->pos_x,-r->pos_y),glm::vec2(-p->pos_x,-p->pos_y));
 						//printf("%f %f\n",sigma,distance);
-						particle_reset(-r->pos_x, 0.0f, -r->pos_y, p->rot_y+180, 0);
+						particle_reset(part_blood, -r->pos_x, 0.0f, -r->pos_y, p->rot_y+180, 0);
 						//break;
 					}
 				}
