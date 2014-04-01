@@ -20,7 +20,7 @@ part_sys_t *part_sys_get (unsigned id)
 	return &part_sys[id];
 }
 
-static bool particle_list_alloc (part_sys_t *s, unsigned count, unsigned div_factor, float l_delta)
+static bool particle_list_alloc (part_sys_t *s, unsigned count, unsigned div_factor, float l_delta, float gravity)
 {
 	s->list = (particle_t *) malloc (sizeof (particle_t) * count);
 	
@@ -30,6 +30,7 @@ static bool particle_list_alloc (part_sys_t *s, unsigned count, unsigned div_fac
 	s->count = count;
 	s->div_factor = div_factor;
 	s->l_delta = l_delta;
+	s->gravity = gravity;
 	
 	return true;
 }
@@ -39,13 +40,11 @@ bool particle_init ()
 	shader[0] = shader_init ("data/shader_part");
 	
 	/* Casticovy system [0] - rozprsk krve */
-	particle_list_alloc (&part_sys[0], PARTICLE_LIST_SIZE, 4, 0.001f);
-	part_sys[0].param[0] = 10.0f;	// radius
+	particle_list_alloc (&part_sys[0], PARTICLE_LIST_SIZE, 4, 0.001f, 9.8f);
 
 	// prvotni umisteni generatoru castic na pozici 5,0,5
-	particle_reset (&part_sys[0], 5,0,5, 0, 0);
+	//particle_reset (&part_sys[0], 5, 0, 5, 0, 0);
 	
-
 	glEnable (GL_POINT_SPRITE);
 	glEnable (GL_PROGRAM_POINT_SIZE);
 	
@@ -54,10 +53,8 @@ bool particle_init ()
 	return true;
 }
 
-void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v)
+void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v, float nm)
 {
-	float radius = s->param[0];
-	
 	for (int i = 0; i < s->count; i ++) {
 		if (s->list[i].l > 0)
 			continue;
@@ -66,15 +63,19 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v)
 		s->list[i].y = y;
 		s->list[i].z = z;
 		
-		s->list[i].sz = s->list[i].sy = s->list[i].sx = s->list[i].s = 0.005f * (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
+		//s->list[i].sz = s->list[i].sy = s->list[i].sx = s->list[i].s = 0.005f * (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
 
+		float alfa = (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
+		
+		s->list[i].s = nm * alfa;
+		
 		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
-		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * radius;
+		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * ((1.0f/nm) * alfa);
 
 		s->list[i].u = r * cosf (theta) + u;
 		s->list[i].v = r * sinf (theta) + v;
 
-		s->list[i].s = 0.005f * (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
+		
 		s->list[i].t = 0.0f;
 		s->list[i].l = (float) (rand () % s->div_factor) / s->div_factor;
 	}
@@ -83,14 +84,11 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v)
 
 void particle_update_ballistic (part_sys_t *s)
 {
-	for (int i = 0; i < s->count; i ++) {
-		s->list[i].sx = s->list[i].sz = cosf (M_PI/180 * -s->list[i].u) * s->list[i].s;
-		s->list[i].sy = sinf (M_PI/180 * - s->list[i].v) * s->list[i].s - s->list[i].t;
-		
-		s->list[i].x += sinf (M_PI/180 * -s->list[i].u) * s->list[i].sx;
-		s->list[i].z += cosf (M_PI/180 * -s->list[i].u) * s->list[i].sz;
-		s->list[i].y += sinf (M_PI/180 * -s->list[i].v) * s->list[i].sy - pow (s->list[i].t, 2.0f);
-		s->list[i].t += 0.0001f;
+	for (int i = 0; i < s->count; i ++) {	
+		s->list[i].x += sinf (M_PI/180 * -s->list[i].u) * s->list[i].s;
+		s->list[i].z += cosf (M_PI/180 * -s->list[i].u) * s->list[i].s;
+		s->list[i].y += sinf (M_PI/180 * -s->list[i].v) * s->list[i].s - (s->gravity * pow (s->list[i].t, 2.0f) / 2.0f);
+		s->list[i].t += 0.0001f;		// 1/s
 
 		if (s->list[i].l > 0)
 			s->list[i].l -= s->l_delta;

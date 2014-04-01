@@ -33,7 +33,7 @@ in float ecPartLife;
 void main()
 {
 	if (ecPartLife > 0.0)
-		FragColor = texture(TexSampler, gl_PointCoord);
+		FragColor = texture(TexSampler, gl_PointCoord) * vec4 (0.5, 0, 0, 1);
 	else
 		FragColor = vec4 (0.0);
 }

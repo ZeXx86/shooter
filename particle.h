@@ -3,12 +3,12 @@
 
 typedef struct {
 	float x, y, z;	// pozice castice
-	float sx, sy, sz; // rychlost castic v danych smerech
-	float l;	// lifetime castice
-
 	float u, v;	// smer letu castice [uhel]
-	float s; // rychlost
-	float t; //cas
+
+	float l;	// zivotnost castice
+	float s;	// pocatecni rychlost [v]
+
+	float t; 	// cas	[t]
 } particle_t;
 
 typedef struct {
@@ -19,11 +19,14 @@ typedef struct {
 		
 	float l_delta;
 	
+	float gravity;	// [g]
+	//float mass;		// [m]
+	
 	float param[5];
 } part_sys_t;
 
 extern part_sys_t *part_sys_get (unsigned id);
-extern void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v);
+extern void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v, float nm);
 extern void particle_update_ballistic (part_sys_t *s);
 extern void particle_system_render ();
 extern bool particle_init ();
