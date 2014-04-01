@@ -67,10 +67,10 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v,
 
 		float alfa = (((rand () % RAND_MAX) / (float) RAND_MAX) + 0.1f);
 		
-		s->list[i].s = nm * alfa;
+		s->list[i].s = alfa / nm;
 		
 		float theta = ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX)) + 1) * 2 * M_PI;
-		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * ((1.0f/nm) * alfa);
+		float r = sqrtf ((float) ((rand () % RAND_MAX) / ((float) RAND_MAX))) * (nm * alfa);
 
 		s->list[i].u = r * cosf (theta) + u;
 		s->list[i].v = r * sinf (theta) + v;
