@@ -35,6 +35,31 @@ static bool particle_list_alloc (part_sys_t *s, unsigned count, unsigned div_fac
 	return true;
 }
 
+int particle_thread (void *unused)
+{
+	part_sys_t *part_blood = part_sys_get (0);
+	level_t *l = level_get ();
+	
+	for (;;) {
+		bool col = false;
+		for (unsigned x = 0; x < l->dim_x; x ++) {
+			for (unsigned y = 0; y < l->dim_y; y ++) {
+				unsigned char b = l->data[y*l->dim_x + x];
+
+				if (b == ' ')
+					continue;
+
+				if (b != '0') {
+					float fx = (int) x;
+					float fy = (int) y;
+
+					particle_collision_level (part_blood, fx*WALL_DIM, fy*WALL_DIM);
+				}
+			}
+		}
+	}
+}
+
 bool particle_init ()
 {
 	shader[0] = shader_init ("data/shader_part");
@@ -49,6 +74,11 @@ bool particle_init ()
 	glEnable (GL_PROGRAM_POINT_SIZE);
 	
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
+	
+	if (!SDL_CreateThread (particle_thread, NULL, NULL)) {
+		fprintf (stderr, "Unable to create thread: %s\n", SDL_GetError ());
+		return false;
+	}
 
 	return true;
 }
@@ -81,6 +111,33 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v,
 	}
 }
 
+
+void particle_collision_level (part_sys_t *s, float x, float y)
+{
+	for (int i = 0; i < s->count; i ++) {	
+		float dim = WALL_DIM - 0.5f;
+		float dim_col = 2*WALL_DIM - 1.2f;
+
+		float a = s->list[i].x - (x-dim);
+		float b = s->list[i].x - (x+dim);
+		float c = s->list[i].z - (y-dim);
+		float d = s->list[i].z - (y+dim);
+
+		float angle = atan2f (y, x) - atan2f (s->list[i].z, s->list[i].x);// atan2(v1.y,v1.x)
+
+		if (a > 0 && b < 0 && c > 0 && d < 0) {
+			if (d <= -dim_col) {
+				s->list[i].u = -angle;
+			} else if (c >= dim_col) {
+				s->list[i].u = angle;
+			} else if (b <= -dim_col) {
+				s->list[i].u = -angle;
+			} else if (a >= dim_col) {
+				s->list[i].u = angle;
+			}
+		}
+	}
+}
 
 void particle_update_ballistic (part_sys_t *s)
 {

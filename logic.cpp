@@ -93,6 +93,9 @@ void logic_motion (player_t *p)
 
 int logic_thread (void *unused)
 {
+	part_sys_t *part_blood = part_sys_get (0);
+	level_t *l = level_get ();
+	
 	for (;;) {
 		player_t *p = player_get ();
 
@@ -102,9 +105,6 @@ int logic_thread (void *unused)
 		for (r = player_list.next; r != &player_list; r = r->next)
 			if (r != p)
 				bot_motion (p, r);
-
-		/* LEVEL RENDERING */
-		level_t *l = level_get ();
 
 		bool col = false;
 		for (unsigned x = 0; x < l->dim_x; x ++) {
@@ -126,8 +126,6 @@ int logic_thread (void *unused)
 				}
 			}
 		}
-
-		part_sys_t *part_blood = part_sys_get (0);
 		
 		/* PARTICLE UPDATE */
 		particle_update_ballistic (part_blood);
