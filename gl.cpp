@@ -13,6 +13,7 @@ static unsigned fps_stick, fps_dtick;
 
 static GLuint vbo_wall_id;
 static GLuint vbo_floor_id;
+static GLuint vbo_spatter_id;
 
 static GLuint shader[10];
 
@@ -22,6 +23,7 @@ static material_t mat2;
 
 void gl_init_wall ();
 void gl_init_floor ();
+void gl_init_spatter ();
 
 /*** An MDL model ***/
 struct mdl_model_t mdlfile[3];
@@ -51,10 +53,12 @@ bool gl_init ()
 
 	gl_init_wall ();
 	gl_init_floor ();
+	gl_init_spatter ();
 	
 	shader[0] = shader_init ("data/shader_bot");
 	shader[1] = shader_init ("data/shader_gun");
 	shader[2] = shader_init ("data/shader_level");
+	shader[3] = shader_init ("data/shader_spatter");
 
 	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.2f;
 	light1.ambient[3] = 1.0f;
@@ -152,6 +156,20 @@ void gl_init_floor ()
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 }
 
+void gl_init_spatter()
+{
+
+	const GLfloat buf[] = {
+		0.0f,0.0f,1.0f,
+		0.0f,1.0f,0.0f,
+		1.0f,0.0f,0.0f};
+
+	glGenBuffers (1, &vbo_spatter_id);
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
+	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
+
+}
+
 #ifndef __WIN32__
 static void gluPerspective (GLfloat fovy, GLfloat aspect,
                GLfloat zNear, GLfloat zFar)//android ndk lacks glu tool kit (unbelievable)
@@ -229,6 +247,16 @@ void gl_render_floor ()
 	
 	glBindBuffer (GL_ARRAY_BUFFER, 0);
 
+}
+
+void gl_render_spatter ()
+{
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
+	glEnableVertexAttribArray (0);	
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (3 * sizeof(GLfloat)), 0);
+	glDrawArrays (GL_TRIANGLES, 0, 3);
+	glDisableVertexAttribArray (0);
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
 }
 
 bool gl_frustum (player_t *p, float x, float y)
@@ -369,6 +397,41 @@ void gl_render_players (player_t *p)
 	}
 }
 
+void render_spatter(player_t *p)
+{
+
+	camera_t *cam = camera_get ();
+
+	glm::mat4 mdl_matrix;
+	mdl_matrix = 	glm::translate (glm::vec3 (1.08f, -0.03, -0.18f)) *
+			glm::rotate (90.0f, glm::vec3 (0, 1, 0)) *
+			glm::rotate (-90.0f, glm::vec3 (1, 0, 0)) *
+			glm::scale (glm::vec3 (0.01f, 0.01f, 0.01f));
+	
+	/* enable program and set uniform variables */
+	glUseProgram (shader[3]);
+	
+	glm::mat4 tmp = /*cam->view * */mdl_matrix;
+
+	int uniform = glGetUniformLocation (shader[3], "PMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
+	uniform = glGetUniformLocation (shader[3], "VMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->view[0]);
+	uniform = glGetUniformLocation (shader[3], "MVMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+	uniform = glGetUniformLocation (shader[3], "NormalMatrix");
+	glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
+
+	GLuint tex_id  = glGetUniformLocation (shader[3], "TexSampler");
+	glUniform1i (tex_id, 0);
+	
+	shader_getuniform_light (shader[3], &light1);
+
+	gl_render_spatter();
+	glUseProgram (0);
+
+}
+
 
 void gl_render_level ()
 {
@@ -461,6 +524,7 @@ void gl_render ()
 	
 	/* Weapon */
 	gl_render_weapon (p);
+	render_spatter(p);
 
 	/* scene motion */
 	//glRotatef (p->rot_y, 0, 1, 0);
