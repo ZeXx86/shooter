@@ -159,27 +159,28 @@ void gl_init_floor ()
 void gl_init_spatter()
 {
 
-		/*const GLfloat buf[] = {
-		1.0f, 0.0f,0.0f,
-		0.0f, 0.5f,0.0f,
-		1.0f, 0.5f,0.0f,*/
-
+	
+	//x y z u v
 	const GLfloat buf[] = {
-		0.0f, 0.0f,0.0f,
-		1.0f, 0.0f,0.0f,
-		0.0f, 1.0f,0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		
-		1.0f, 0.0f,0.0f,
-		0.0f, 1.0f,0.0f,
-		1.0f, 1.1f,0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f
 	};
 
-	/*const GLfloat buf[] = {
-		0.0f, 0.0f,0.0f,
-		0.0f, 0.5f,0.0f,
-		0.5f, 0.5f,0.0f
-	};*/
 
+	//const GLfloat buf[] = {
+	//	0.0f, 0.0f, 0.0f, 
+	//	1.0f, 0.0f, 0.0f, 
+	//	0.0f, 1.0f, 0.0f, 
+	//	
+	//	1.0f, 0.0f, 0.0f, 
+	//	0.0f, 1.0f, 0.0f, 
+	//	1.0f, 1.0f, 0.0f
+	//};
 
 	glGenBuffers (1, &vbo_spatter_id);
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
@@ -269,15 +270,22 @@ void gl_render_floor ()
 void gl_render_spatter ()
 {
 	glEnable (GL_BLEND); 
-	//glDepthMask (GL_FALSE);
+
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
-	glEnableVertexAttribArray (0);	
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (3 * sizeof(GLfloat)), 0);
+	
+	glEnableVertexAttribArray (0);
+	glEnableVertexAttribArray (1);
+
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	
 	glDrawArrays (GL_TRIANGLES, 0, 6);
+	
 	glDisableVertexAttribArray (0);
+	glDisableVertexAttribArray (1);
+	
 	glBindBuffer (GL_ARRAY_BUFFER, 0);
 	glDisable (GL_BLEND);
-	//glDepthMask (GL_TRUE);
 }
 
 bool gl_frustum (player_t *p, float x, float y)
@@ -421,38 +429,14 @@ void gl_render_players (player_t *p)
 void render_spatter()
 {
 
-	camera_t *cam = camera_get ();
-
-	glm::mat4 mdl_matrix;
-	mdl_matrix = glm::translate (glm::vec3 (-0.01f, 0.0f, -0.1f))*glm::scale (glm::vec3 (0.01f, 0.01f, 0.01f));
-	glm::mat4 tmp = /*cam->view **/ mdl_matrix;
-
-
-
-	//glm::mat4 mdl_matrix;
-	//mdl_matrix = glm::translate (glm::vec3 (0.5f, 0.0f, 0.5f));
-	//		glm::rotate (90.0f, glm::vec3 (0, 1, 0)) *
-	//		glm::rotate (-90.0f, glm::vec3 (1, 0, 0)) *
-	//		glm::scale (glm::vec3 (0.01f, 0.01f, 0.01f));
-
-	//glm::mat4 tmp = /*cam->view * */mdl_matrix;
-	
-	
-			
-			/* enable program and set uniform variables */
 	glUseProgram (shader[3]);
 	
 	int uniform = glGetUniformLocation (shader[3], "PMatrix");
-	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
-	uniform = glGetUniformLocation (shader[3], "VMatrix");
-	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->view[0]);
-	uniform = glGetUniformLocation (shader[3], "MVMatrix");
-	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
-	uniform = glGetUniformLocation (shader[3], "NormalMatrix");
-	glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&glm::ortho(0.0f,2.f,0.f,2.f,-1.f,1.f));
 
 	GLuint tex_id  = glGetUniformLocation (shader[3], "TexSampler");
 	glUniform1i (tex_id, 0);
+	glBindTexture (GL_TEXTURE_2D, tex_get (7));
 	
 	shader_getuniform_light (shader[3], &light1);
 

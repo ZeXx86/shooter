@@ -126,6 +126,7 @@ bool tex_init ()
 	tex_create (PATH_DATA "par13.jpg");
 	tex_create (PATH_DATA "par13_n.jpg");
 	tex_create (PATH_DATA "ball1.png");
+	tex_create (PATH_DATA "spatter.jpg");
 
 	return true;
 }
