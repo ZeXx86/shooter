@@ -111,9 +111,9 @@ void render_spatter()
 	float x,y = 0.0f;
 	glUseProgram (shader[0]);
 	glm::mat4 ortho = glm::ortho (0.0f,2.f,0.f,2.f,-1.f,1.f)*glm::translate(glm::vec3(x,y,0.0f));
-	int uniform = glGetUniformLocation (shader[3], "PMatrix");
+	int uniform = glGetUniformLocation (shader[0], "PMatrix");
 	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
-	GLuint tex_id  = glGetUniformLocation (shader[3], "TexSampler");
+	GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
 	glUniform1i (tex_id, 0);
 	glBindTexture (GL_TEXTURE_2D, tex_get (7));
 	gl_render_spatter();
