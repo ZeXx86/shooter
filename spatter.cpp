@@ -63,7 +63,7 @@ void spatter_apply()
 		{
 			s->list[i].x = (float) ((rand () ) / ((float) RAND_MAX));
 			s->list[i].y = (float) ((rand () ) / ((float) RAND_MAX));
-			s->list[i].l = 1000.0f;
+			s->list[i].l = 1.0f;
 			break;
 		}
 	}
@@ -72,7 +72,7 @@ void spatter_apply()
 void spatter_update ()
 {
 	spatter_sys_t *s = &spatter_sys[0];
-	float l_delta = 1.001;
+	float l_delta = 0.001;
 	for (int i = 0; i < s->count; i ++) {	
 		if (s->list[i].l > 0)
 			s->list[i].l -= l_delta;
@@ -92,7 +92,7 @@ void gl_init_spatter()
 		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		1.0f, 1.0f, 0.0f, 1.0f, 1.0f
 	};
-
+	
 	glGenBuffers (1, &vbo_spatter_id);
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
@@ -107,7 +107,7 @@ void gl_render_spatter ()
 	
 	glEnableVertexAttribArray (0);
 	glEnableVertexAttribArray (1);
-
+	
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
 	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
 	
@@ -125,12 +125,20 @@ void render_spatter(int i)
 {
 	glUseProgram (shader[0]);
 	glm::mat4 ortho = glm::ortho (0.0f,2.f,0.f,2.f,-1.f,1.f)*glm::translate(glm::vec3(spatter_sys[0].list[i].x,spatter_sys[0].list[i].y,0.0f));
+	
 	int uniform = glGetUniformLocation (shader[0], "PMatrix");
 	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
+
+	uniform = glGetUniformLocation (shader[0], "life");
+	glUniform1f (uniform,spatter_sys[0].list[i].l);
+
+	
 	GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
 	glUniform1i (tex_id, 0);
 	glBindTexture (GL_TEXTURE_2D, tex_get (7));
+	
 	gl_render_spatter();
+	
 	glUseProgram (0);
 }
 
