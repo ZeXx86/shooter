@@ -74,7 +74,7 @@ bool init ()
 		return false;
 
 	
-	if(!spatter_init())
+	if(!spatter_init ())
 		return false;
 	
 	gl_resize (current.w, current.h);// Nastavi perspektivu

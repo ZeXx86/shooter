@@ -10,11 +10,11 @@
 
 static GLuint vbo_spatter_id;
 
-static spatter_sys_t part_sys[1];
+static spatter_sys_t spatter_sys[1];
 
 static GLuint shader[1];
 
-#define PARTICLE_LIST_SIZE	1
+#define SPATTER_LIST_SIZE	10
 
 
 static bool spatter_sys_alloc (spatter_sys_t *s, unsigned count)
@@ -32,37 +32,52 @@ static bool spatter_sys_alloc (spatter_sys_t *s, unsigned count)
 
 bool spatter_init ()
 {
-	spatter_sys_alloc (&part_sys[0], PARTICLE_LIST_SIZE);
+	spatter_sys_alloc (&spatter_sys[0], SPATTER_LIST_SIZE);
+	//spatter_reset();
+	gl_init_spatter();
+	
 	return true;
 }
 
-void spatter_reset (spatter_sys_t *s, float x, float y)
+void spatter_reset ()
 {
+	spatter_sys_t *s = &spatter_sys[0];
 	for (int i = 0; i < s->count; i ++) {
 		if (s->list[i].l > 0)
 			continue;
 		
-		s->list[i].x = x;
-		s->list[i].y = y;
-		s->list[i].t = 0.0f;
-		s->list[i].l = 1000000000000000.0f;		
+		s->list[i].x = (float) ((rand () ) / ((float) RAND_MAX));
+		s->list[i].y = (float) ((rand () ) / ((float) RAND_MAX));
+		s->list[i].l = 0.0f;		
+	}
+	
+	
+}
+
+void spatter_apply()
+{
+	spatter_sys_t *s = &spatter_sys[0];
+	for (int i = 0; i < s->count; i ++) {
+		//resurection
+		if (!s->list[i].l >= 0.0)
+		{
+			s->list[i].x = (float) ((rand () ) / ((float) RAND_MAX));
+			s->list[i].y = (float) ((rand () ) / ((float) RAND_MAX));
+			s->list[i].l = 1000.0f;
+			break;
+		}
 	}
 }
 
-void spatter_update (spatter_sys_t *s)
+void spatter_update ()
 {
-
-	float l_delta = 0.001;
+	spatter_sys_t *s = &spatter_sys[0];
+	float l_delta = 1.001;
 	for (int i = 0; i < s->count; i ++) {	
-		
-		s->list[i].t += 0.0001f;		// 1/s
-
 		if (s->list[i].l > 0)
 			s->list[i].l -= l_delta;
 	}
 }
-
-
 
 void gl_init_spatter()
 {
@@ -106,11 +121,10 @@ void gl_render_spatter ()
 }
 
 
-void render_spatter()
+void render_spatter(int i)
 {
-	float x,y = 0.0f;
 	glUseProgram (shader[0]);
-	glm::mat4 ortho = glm::ortho (0.0f,2.f,0.f,2.f,-1.f,1.f)*glm::translate(glm::vec3(x,y,0.0f));
+	glm::mat4 ortho = glm::ortho (0.0f,2.f,0.f,2.f,-1.f,1.f)*glm::translate(glm::vec3(spatter_sys[0].list[i].x,spatter_sys[0].list[i].y,0.0f));
 	int uniform = glGetUniformLocation (shader[0], "PMatrix");
 	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
 	GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
@@ -118,4 +132,15 @@ void render_spatter()
 	glBindTexture (GL_TEXTURE_2D, tex_get (7));
 	gl_render_spatter();
 	glUseProgram (0);
+}
+
+void render_spatters()
+{
+	for(int i = 0; i < SPATTER_LIST_SIZE; i++)
+	{
+		if(spatter_sys[0].list[i].l>0.0f)
+		{
+			render_spatter(i);
+		}
+	}
 }

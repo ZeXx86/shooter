@@ -8,6 +8,7 @@
 #include "kbd.h"
 #include "bot.h"
 #include "gl.h"
+#include "spatter.h"
 
 
 bool logic_collision (player_t *p, float x, float y)
@@ -127,6 +128,9 @@ int logic_thread (void *unused)
 			}
 		}
 		
+		/* SPATTER UPDATE*/
+		spatter_update();
+
 		/* PARTICLE UPDATE */
 		particle_update_ballistic (part_blood);
 
@@ -153,6 +157,7 @@ int logic_thread (void *unused)
 						//float distance = glm::distance(glm::vec2(-r->pos_x,-r->pos_y),glm::vec2(-p->pos_x,-p->pos_y));
 						//printf("%f %f\n",sigma,distance);
 						particle_reset (part_blood, -r->pos_x, 0.0f, -r->pos_y, p->rot_y+180, 0, 10.0f);
+						spatter_apply();
 						// 60 brokovnice
 						// 10 sniper
 						//break;

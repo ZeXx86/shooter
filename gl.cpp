@@ -54,7 +54,7 @@ bool gl_init ()
 
 	gl_init_wall ();
 	gl_init_floor ();
-	gl_init_spatter ();
+	//gl_init_spatter ();
 	
 	shader[0] = shader_init ("data/shader_bot");
 	shader[1] = shader_init ("data/shader_gun");
@@ -481,7 +481,7 @@ void gl_render ()
 	
 	particle_system_render ();
 
-	render_spatter();
+	render_spatters();
 	
 	glFlush ();
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer
