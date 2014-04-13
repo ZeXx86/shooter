@@ -59,7 +59,7 @@ void spatter_apply()
 	spatter_sys_t *s = &spatter_sys[0];
 	for (int i = 0; i < s->count; i ++) {
 		//resurection
-		if (!s->list[i].l >= 0.0)
+		if (s->list[i].l <= 0.0)
 		{
 			s->list[i].x = (float) ((rand () ) / ((float) RAND_MAX));
 			s->list[i].y = (float) ((rand () ) / ((float) RAND_MAX));

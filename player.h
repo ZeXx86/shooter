@@ -11,6 +11,7 @@ typedef struct player_ctx {
 	player_ctx *next, *prev;
 
 	unsigned char state;
+	unsigned char action;
 
 	unsigned hp;
 	

@@ -260,8 +260,10 @@ void gl_render_weapon (player_t *p)
 		p->state &= ~PLAYER_STATE_FIRE;
 
 		/* new shot */
-		if (p->mdl_frame == 5)
+		if (p->mdl_frame == 5) {
 			p->mdl_frame = 0;
+			p->action = 1;
+		}
 	}
 
 	if (p->mdl_frame < 5)
