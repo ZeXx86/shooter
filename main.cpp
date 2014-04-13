@@ -6,6 +6,7 @@
 #include "logic.h"
 #include "tex.h"
 #include "gl.h"
+#include "spatter.h"
 
 SDL_Window *g_window;
 
@@ -70,6 +71,10 @@ bool init ()
 	}
 
 	if (!particle_init ())
+		return false;
+
+	
+	if(!spatter_init())
 		return false;
 	
 	gl_resize (current.w, current.h);// Nastavi perspektivu

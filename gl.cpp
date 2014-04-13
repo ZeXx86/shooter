@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "particle.h"
+#include "spatter.h"
 
 
 static unsigned fps_stick, fps_dtick;
@@ -23,7 +24,7 @@ static material_t mat2;
 
 void gl_init_wall ();
 void gl_init_floor ();
-void gl_init_spatter ();
+//void gl_init_spatter ();
 
 /*** An MDL model ***/
 struct mdl_model_t mdlfile[3];
@@ -156,37 +157,7 @@ void gl_init_floor ()
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 }
 
-void gl_init_spatter()
-{
 
-	
-	//x y z u v
-	const GLfloat buf[] = {
-		0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		
-		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 1.0f, 0.0f, 1.0f, 1.0f
-	};
-
-
-	//const GLfloat buf[] = {
-	//	0.0f, 0.0f, 0.0f, 
-	//	1.0f, 0.0f, 0.0f, 
-	//	0.0f, 1.0f, 0.0f, 
-	//	
-	//	1.0f, 0.0f, 0.0f, 
-	//	0.0f, 1.0f, 0.0f, 
-	//	1.0f, 1.0f, 0.0f
-	//};
-
-	glGenBuffers (1, &vbo_spatter_id);
-	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
-	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
-
-}
 
 #ifndef __WIN32__
 static void gluPerspective (GLfloat fovy, GLfloat aspect,
@@ -267,26 +238,7 @@ void gl_render_floor ()
 
 }
 
-void gl_render_spatter ()
-{
-	glEnable (GL_BLEND); 
 
-	glBindBuffer (GL_ARRAY_BUFFER, vbo_spatter_id);
-	
-	glEnableVertexAttribArray (0);
-	glEnableVertexAttribArray (1);
-
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
-	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
-	
-	glDrawArrays (GL_TRIANGLES, 0, 6);
-	
-	glDisableVertexAttribArray (0);
-	glDisableVertexAttribArray (1);
-	
-	glBindBuffer (GL_ARRAY_BUFFER, 0);
-	glDisable (GL_BLEND);
-}
 
 bool gl_frustum (player_t *p, float x, float y)
 {
@@ -426,26 +378,6 @@ void gl_render_players (player_t *p)
 	}
 }
 
-void render_spatter()
-{
-
-	glUseProgram (shader[3]);
-	
-	int uniform = glGetUniformLocation (shader[3], "PMatrix");
-	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&glm::ortho(0.0f,2.f,0.f,2.f,-1.f,1.f));
-
-	GLuint tex_id  = glGetUniformLocation (shader[3], "TexSampler");
-	glUniform1i (tex_id, 0);
-	glBindTexture (GL_TEXTURE_2D, tex_get (7));
-	
-	shader_getuniform_light (shader[3], &light1);
-
-	gl_render_spatter();
-	glUseProgram (0);
-
-}
-
-
 void gl_render_level ()
 {
 	camera_t *cam = camera_get ();
@@ -550,7 +482,7 @@ void gl_render ()
 	particle_system_render ();
 
 	render_spatter();
-
+	
 	glFlush ();
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer
 	SDL_GL_SwapWindow (g_window);

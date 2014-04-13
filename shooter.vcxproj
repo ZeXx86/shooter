@@ -87,6 +87,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mdl\mdl.cpp" />
     <ClCompile Include="mouse.cpp" />
+    <ClCompile Include="spatter.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="tex.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="mouse.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="shooter.h" />
+    <ClInclude Include="spatter.h" />
     <ClInclude Include="tex.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="particle.h" />

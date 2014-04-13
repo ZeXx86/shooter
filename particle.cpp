@@ -13,7 +13,7 @@ static GLuint shader[1];
 
 static part_sys_t part_sys[1];
 
-#define PARTICLE_LIST_SIZE	2048
+#define PARTICLE_LIST_SIZE	1024
 
 part_sys_t *part_sys_get (unsigned id)
 {
@@ -207,3 +207,5 @@ void particle_system_render ()
 	/* disable program */
 	glUseProgram (0);
 }
+
+
