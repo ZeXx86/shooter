@@ -33,7 +33,7 @@ static bool spatter_sys_alloc (spatter_sys_t *s, unsigned count)
 bool spatter_init ()
 {
 	spatter_sys_alloc (&spatter_sys[0], SPATTER_LIST_SIZE);
-	//spatter_reset();
+	spatter_reset();
 	gl_init_spatter();
 	
 	return true;
@@ -124,7 +124,8 @@ void gl_render_spatter ()
 void render_spatter(int i)
 {
 	glUseProgram (shader[0]);
-	glm::mat4 ortho = glm::ortho (0.0f,2.f,0.f,2.f,-1.f,1.f)*glm::translate(glm::vec3(spatter_sys[0].list[i].x,spatter_sys[0].list[i].y,0.0f));
+	glm::mat4 ortho = glm::ortho (0.0f,2.0f,0.0f,2.0f,-1.0f,1.0f) *
+			  glm::translate(glm::vec3(spatter_sys[0].list[i].x,spatter_sys[0].list[i].y,0.0f));
 	
 	int uniform = glGetUniformLocation (shader[0], "PMatrix");
 	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);

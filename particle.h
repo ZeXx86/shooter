@@ -26,10 +26,10 @@ typedef struct {
 } part_sys_t;
 
 extern part_sys_t *part_sys_get (unsigned id);
-extern void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v, float nm);
+extern void particle_reset_ballistic (part_sys_t *s, float x, float y, float z, float u, float v, float nm);
 extern void particle_collision_level (part_sys_t *s, float x, float y);
 extern void particle_update_ballistic (part_sys_t *s);
-extern void particle_system_render ();
+extern void particle_system_render (part_sys_t *s);
 extern bool particle_init ();
 
 

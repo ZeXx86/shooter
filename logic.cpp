@@ -95,6 +95,7 @@ void logic_motion (player_t *p)
 int logic_thread (void *unused)
 {
 	part_sys_t *part_blood = part_sys_get (0);
+	part_sys_t *part_smoke = part_sys_get (1);
 	level_t *l = level_get ();
 	
 	for (;;) {
@@ -133,9 +134,11 @@ int logic_thread (void *unused)
 
 		/* PARTICLE UPDATE */
 		particle_update_ballistic (part_blood);
+		particle_update_ballistic (part_smoke);
 
 		if (p->action == 1) {
 			p->action = 0;
+			
 			//primka ax+by+c=0
 			float a1, b1, a2, b2, c1, c2, x, y;	
 			for (r = player_list.next; r != &player_list; r = r->next) {
@@ -157,10 +160,9 @@ int logic_thread (void *unused)
 					if (sigma<1.0f) {
 						//float distance = glm::distance(glm::vec2(-r->pos_x,-r->pos_y),glm::vec2(-p->pos_x,-p->pos_y));
 						//printf("%f %f\n",sigma,distance);
-						particle_reset (part_blood, -r->pos_x, 0.0f, -r->pos_y, p->rot_y+180, 0, 10.0f);
+						particle_reset_ballistic (part_blood, -r->pos_x, 0.0f, -r->pos_y, p->rot_y+180, 0, 50.0f);
 						
-						
-							spatter_apply();
+						spatter_apply();
 						// 60 brokovnice
 						// 10 sniper
 						//break;

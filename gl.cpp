@@ -8,13 +8,13 @@
 #include "camera.h"
 #include "particle.h"
 #include "spatter.h"
+#include "sky.h"
 
 
 static unsigned fps_stick, fps_dtick;
 
 static GLuint vbo_wall_id;
 static GLuint vbo_floor_id;
-static GLuint vbo_spatter_id;
 
 static GLuint shader[10];
 
@@ -24,7 +24,6 @@ static material_t mat2;
 
 void gl_init_wall ();
 void gl_init_floor ();
-//void gl_init_spatter ();
 
 /*** An MDL model ***/
 struct mdl_model_t mdlfile[3];
@@ -351,7 +350,7 @@ void gl_render_players (player_t *p)
 		shader_getuniform_light (shader[0], &light1);
 		shader_getuniform_material (shader[0], &mat1);
 		
-		GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
+		GLuint tex_id  = glGetUniformLocation (shader[0], "MainTex");
 		glUniform1i (tex_id, 0);
 		
 		mdl_renderitp (l->mdl_frame, l->mdl_itp, &mdlfile[1]);
@@ -471,19 +470,20 @@ void gl_render ()
 	
 	/* Weapon */
 	gl_render_weapon (p);
-	
 
-	/* scene motion */
-	//glRotatef (p->rot_y, 0, 1, 0);
-	//glTranslatef (p->pos_x, 0, p->pos_y);
-	
+	/* Players */
 	gl_render_players (p);
 
+	/* Level */
 	gl_render_level ();
 	
-	particle_system_render ();
+	/* Sky */
+	sky_system_render ();
+	
+	particle_system_render (part_sys_get (0));
+	particle_system_render (part_sys_get (1));
 
-	render_spatters();
+	render_spatters ();
 	
 	glFlush ();
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer

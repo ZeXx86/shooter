@@ -11,7 +11,7 @@
 static GLuint vbo_particle_id;
 static GLuint shader[1];
 
-static part_sys_t part_sys[1];
+static part_sys_t part_sys[2];
 
 #define PARTICLE_LIST_SIZE	1024
 
@@ -64,9 +64,11 @@ bool particle_init ()
 {
 	shader[0] = shader_init ("data/shader_part");
 	
-	/* Casticovy system [0] - rozprsk krve */
+	/* Casticovy system [0] - rozstrik krve */
 	particle_list_alloc (&part_sys[0], PARTICLE_LIST_SIZE, 4, 0.001f, 9.8f);
-
+	/* Casticovy system [1] - rozprsk krve */
+	particle_list_alloc (&part_sys[1], PARTICLE_LIST_SIZE, 1, 0.0005f, 0.2f);
+	
 	// prvotni umisteni generatoru castic na pozici 5,0,5
 	//particle_reset (&part_sys[0], 5, 0, 5, 0, 0);
 	
@@ -83,7 +85,29 @@ bool particle_init ()
 	return true;
 }
 
-void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v, float nm)
+void particle_reset (part_sys_t *s, float x, float y, float z)
+{
+	for (int i = 0; i < s->count; i ++) {
+		if (s->list[i].l > 0)
+			continue;
+		
+		s->list[i].x = x;
+		s->list[i].y = y;
+		s->list[i].z = z;
+
+		s->list[i].s = 0;
+
+		s->list[i].u = 0;
+		s->list[i].v = 0;
+
+		s->list[i].t = 0.0f;
+		s->list[i].l = 1;//(float) (rand () % s->div_factor) / s->div_factor;
+		
+		break;
+	}
+}
+
+void particle_reset_ballistic (part_sys_t *s, float x, float y, float z, float u, float v, float nm)
 {
 	for (int i = 0; i < s->count; i ++) {
 		if (s->list[i].l > 0)
@@ -111,12 +135,14 @@ void particle_reset (part_sys_t *s, float x, float y, float z, float u, float v,
 	}
 }
 
-
 void particle_collision_level (part_sys_t *s, float x, float y)
 {
-	for (int i = 0; i < s->count; i ++) {	
-		float dim = WALL_DIM - 0.5f;
-		float dim_col = 2*WALL_DIM - 1.2f;
+	for (int i = 0; i < s->count; i ++) {
+		if (s->list[i].y > 1.0f || s->list[i].y < -1.0f)
+			continue;
+		
+		float dim = WALL_DIM - 0.95f;
+		float dim_col = 2*WALL_DIM - 2.0f;
 
 		float a = s->list[i].x - (x-dim);
 		float b = s->list[i].x - (x+dim);
@@ -125,17 +151,36 @@ void particle_collision_level (part_sys_t *s, float x, float y)
 
 		float angle = atan2f (y, x) - atan2f (s->list[i].z, s->list[i].x);// atan2(v1.y,v1.x)
 
+		bool collide = false;
+		float newangle = s->list[i].u;
+		
 		if (a > 0 && b < 0 && c > 0 && d < 0) {
 			if (d <= -dim_col) {
-				s->list[i].u = -angle;
+				//newangle = angle;
+				s->list[i].u -= 90;
+				collide = true;
 			} else if (c >= dim_col) {
-				s->list[i].u = angle;
+				//newangle = angle;
+				s->list[i].u -= 90;
+				collide = true;
 			} else if (b <= -dim_col) {
-				s->list[i].u = -angle;
+				//newangle = angle;
+				s->list[i].u -= 90;
+				collide = true;
 			} else if (a >= dim_col) {
-				s->list[i].u = angle;
+				//newangle = angle;
+				s->list[i].u -= 90;
+				collide = true;
 			}
 		}
+		
+		//if (collide == false && s->list[i].y < -0.90f)
+		//	collide = true;
+		
+		if (collide)
+			particle_reset (&part_sys[1], s->list[i].x, s->list[i].y, s->list[i].z);
+		
+		//s->list[i].u = angle;
 	}
 }
 
@@ -172,7 +217,7 @@ void particle_render (part_sys_t *s)
 	glDepthMask (GL_TRUE);
 }
 
-void particle_system_render ()
+void particle_system_render (part_sys_t *s)
 {
 	camera_t *cam = camera_get ();
 	
@@ -202,7 +247,7 @@ void particle_system_render ()
 	GLuint tex_id  = glGetUniformLocation (shader[0], "TexSampler");
 	glUniform1i (tex_id, 0);
 
-	particle_render (&part_sys[0]);
+	particle_render (s);
 			
 	/* disable program */
 	glUseProgram (0);

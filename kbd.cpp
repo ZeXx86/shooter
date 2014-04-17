@@ -1,6 +1,7 @@
 #include "shooter.h"
 #include "kbd.h"
 #include <stdio.h>
+
 static kbd_t kbd;
 
 static bool kbmap[323] = { false };
