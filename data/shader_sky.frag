@@ -290,8 +290,8 @@ void main()
 	float zNoise = snoise(v_texCoord3D + vec3(0.0, 0.0, time));
 	vec3 uvw = v_texCoord3D + 0.1 * vec3(xNoise, yNoise, zNoise);
 	
-	vec3 fff = calcValue(v_texCoord3D);
+	vec3 fff = calcValue(v_texCoord3D) / 2;
 
-	FragColor = vec4(vec3(0, 0, 0.5) + fff, 1.0);
+	FragColor = vec4(vec3(0.3, 0, 0.0) + fff, 1);
 
 }
