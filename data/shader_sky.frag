@@ -268,7 +268,7 @@ float snoise(vec3 v)
 vec3 calcValue(vec3 v)
 {
 	// Six components of noise in a fractal sum
-	float n = v;
+	float n = float (v);
 
 	if (noiseIteration >= 1.0) n = snoise(v - noisePosition);
 	if (noiseIteration >= 2.0) n += 0.5 * snoise(v * 2.0 - (noisePosition + vec3(0.0, 0.0, 1.4))); 
@@ -290,7 +290,7 @@ void main()
 	float zNoise = snoise(v_texCoord3D + vec3(0.0, 0.0, time));
 	vec3 uvw = v_texCoord3D + 0.1 * vec3(xNoise, yNoise, zNoise);
 	
-	vec3 fff = calcValue(v_texCoord3D) / 2;
+	vec3 fff = calcValue(v_texCoord3D) / 2.0;
 
 	FragColor = vec4(vec3(0.3, 0, 0.0) + fff, 1);
 

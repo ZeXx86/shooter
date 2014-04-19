@@ -1,5 +1,7 @@
 #version 400 core
 
+//precision highp float; // Defines precision for float and float-derived (vector/matrix) types.
+
 struct LightInfo {
 	vec4 position;		//Light position   X,Y,Z, directional=0 OR positional=1
 	vec4 ambient;		//Light ambient color
@@ -29,6 +31,6 @@ void main()
     ecPosition = MVMatrix * vec4 (VertexPosition, 1.0);
     ecPartLife = PartLife;
 
-    gl_PointSize = 64 / dist;
+    gl_PointSize = 64.0 / dist;
     gl_Position  = PMatrix * ecPosition;
 }

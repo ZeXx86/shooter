@@ -271,7 +271,7 @@ float snoise(vec3 v)
 vec3 calcValue(vec3 v)
 {
 	// Six components of noise in a fractal sum
-	float n = v;
+	float n = float (v);
 
 	//if (noiseIteration >= 1.0) n = cnoise(v - vec3(0.0, 0.0, time));
 	//if (noiseIteration >= 2.0) n += 0.5 * cnoise(v * 2.0 - vec3(0.0, 0.0, time*1.4)); 
