@@ -15,6 +15,9 @@ static unsigned fps_stick, fps_dtick;
 
 static GLuint vbo_wall_id;
 static GLuint vbo_floor_id;
+static GLuint fbo_screen_quad_id;
+static GLuint vbo_screen_quad_id;
+static GLuint renderTexture, depthTexture;
 
 static GLuint shader[10];
 
@@ -24,6 +27,8 @@ static material_t mat2;
 
 void gl_init_wall ();
 void gl_init_floor ();
+void gl_init_screen_quad ();
+
 
 /*** An MDL model ***/
 struct mdl_model_t mdlfile[3];
@@ -50,15 +55,17 @@ bool gl_init ()
 
 	if (!mdl_read (PATH_DATA "player1.mdl", &mdlfile[1]))
 		return false;
-
+	
 	gl_init_wall ();
 	gl_init_floor ();
+	gl_init_screen_quad ();
 	//gl_init_spatter ();
 	
 	shader[0] = shader_init ("data/shader_bot");
 	shader[1] = shader_init ("data/shader_gun");
 	shader[2] = shader_init ("data/shader_level");
 	shader[3] = shader_init ("data/shader_spatter");
+	shader[4] = shader_init ("data/shader_blur");
 
 	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.2f;
 	light1.ambient[3] = 1.0f;
@@ -137,6 +144,108 @@ void gl_init_wall ()
 	glGenBuffers (1, &vbo_wall_id);
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_wall_id);
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
+}
+
+void gl_init_screen_quad()
+{
+	const GLfloat buf[] = {
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f
+	};
+	
+	glGenBuffers (1, &vbo_screen_quad_id);
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_screen_quad_id);
+	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
+	
+
+	//create depth texture
+	glGenTextures(1,&depthTexture);
+	glBindTexture(GL_TEXTURE_2D, depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,1280,800,0,GL_DEPTH_COMPONENT,GL_FLOAT,NULL);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+    int i = glGetError();
+	if(i!=0)
+		printf("%s\n",gluErrorString(i));
+	glBindTexture(GL_TEXTURE_2D,0);
+
+
+	//Create framebuffer texture
+	glGenTextures(1,&renderTexture);
+	glBindTexture(GL_TEXTURE_2D, renderTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,1280,800,0,GL_RGBA,GL_FLOAT,NULL);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	i = glGetError();
+	if(i!=0)
+		printf("%s\n",gluErrorString(i));
+	glBindTexture(GL_TEXTURE_2D,0);
+
+	
+
+	
+	glGenFramebuffers(1,&fbo_screen_quad_id);
+	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
+	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,renderTexture,0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthTexture,0);
+	i=glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if(i!=GL_FRAMEBUFFER_COMPLETE)
+		printf("Framebuffer failed: %d\n",i);
+
+	glEnable (GL_DEPTH_TEST);
+	glBindFramebuffer(GL_FRAMEBUFFER,0);
+
+}
+
+void gl_render_screen_quad ()
+{
+	
+	//glEnable (GL_BLEND); 
+
+	glBindBuffer (GL_ARRAY_BUFFER, vbo_screen_quad_id);
+	
+	glEnableVertexAttribArray (0);
+	glEnableVertexAttribArray (1);
+	
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), 0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(GLfloat)), (GLvoid *) (3 * sizeof(GLfloat)));
+	
+	glDrawArrays (GL_TRIANGLES, 0, 6);
+	
+	glDisableVertexAttribArray (0);
+	glDisableVertexAttribArray (1);
+	
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
+	//glDisable (GL_BLEND);
+
+}
+
+
+void render_screen_quad()
+{
+	glUseProgram (shader[4]);
+	glm::mat4 ortho = glm::ortho (0.0f,2.0f,0.0f,2.0f,-1.0f,1.0f);
+	
+	int uniform = glGetUniformLocation (shader[4], "PMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
+
+	
+	GLuint tex_id  = glGetUniformLocation (shader[4], "TexSampler");
+	glUniform1i (tex_id, 0);
+	glBindTexture (GL_TEXTURE_2D, renderTexture);
+	
+	gl_render_screen_quad();
+	
+	glUseProgram (0);
 }
 
 void gl_init_floor ()
@@ -468,6 +577,13 @@ void gl_render ()
 	
 	player_t *p = player_get ();
 	
+	
+	
+	//RENDER TO TEXTURE
+	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	//glEnable(GL_DEPTH_TEST);
+	
 	/* Weapon */
 	gl_render_weapon (p);
 
@@ -480,6 +596,14 @@ void gl_render ()
 	/* Sky */
 	sky_system_render ();
 	
+	glFlush();
+	
+	
+	//RENDER TO SCREEN
+	glBindFramebuffer(GL_FRAMEBUFFER,0);
+	
+	render_screen_quad();
+
 	particle_system_render (part_sys_get (0));
 	particle_system_render (part_sys_get (1));
 
