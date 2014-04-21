@@ -163,8 +163,9 @@ void gl_init_screen_quad()
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 	
 
-	int textureWidth = 1280;
-	int textureHeight = 800;
+	int textureWidth; 
+	int textureHeight;
+	SDL_GetWindowSize(g_window,&textureWidth,&textureHeight);
 	//create depth texture
 	glGenTextures(1,&depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
@@ -260,10 +261,13 @@ void render_screen_quad(GLuint srcTexture)
 {
 		glUseProgram (shader[4]);
 		glm::mat4 ortho = glm::ortho (0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f);
-	
+		int textureWidth, textureHeight;
+		SDL_GetWindowSize(g_window,&textureWidth,&textureHeight);
 		int uniform = glGetUniformLocation (shader[4], "PMatrix");
 		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
-
+		
+		uniform = glGetUniformLocation (shader[4], "pixelSize");
+		glUniform2f (uniform, 1/(float)textureWidth, 1/(float)textureHeight);
 	
 		GLuint tex_id  = glGetUniformLocation (shader[4], "TexSampler");
 		glUniform1i (tex_id, 0);
@@ -599,7 +603,7 @@ void gl_render_level ()
 void blur_screen()
 {
 		//PING PONG - MULTIPASS BLUR - MORE ITERATIONS MORE BLUR
-	for(int i = 0; i<10;i++)
+	for(int i = 0; i<6;i++)
 	{
 		if(i%2==0)
 		{
