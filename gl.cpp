@@ -600,11 +600,12 @@ void gl_render_level ()
 	}
 }
 
-void blur_screen()
+void blur_screen (player_t *p)
 {
+	int blur = (100 - p->hp) / 10;
+	
 		//PING PONG - MULTIPASS BLUR - MORE ITERATIONS MORE BLUR
-	for(int i = 0; i<6;i++)
-	{
+	for(int i = 0; i<blur;i++) {
 		if(i%2==0)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id2);
@@ -655,7 +656,7 @@ void gl_render ()
 	//NAPRIKLAD IF PLAYER->STATE == INJURED
 	bool blur = true;
 	if(blur)
-		blur_screen();
+		blur_screen(p);
 
 	//RENDER TO SCREEN
 	glBindFramebuffer(GL_FRAMEBUFFER,0);

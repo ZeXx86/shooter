@@ -44,11 +44,14 @@ void bot_motion (player_t *p, player_t *l)
 			l->pos_y -= cosf (M_PI/180 * l->rot_y) * (PLAYER_SPEED);
 			l->state = PLAYER_STATE_WALK;
 		} else if (dist < 1.1f) {
-			if (!(l->state & PLAYER_STATE_WALK))
+			if (!(l->state & PLAYER_STATE_WALK)) {
 				l->state = PLAYER_STATE_FIRE;
 				
-			if (p->hp)
-				p->hp --;
+				if (p->hp)
+					p->hp --;
+			}
+				
+			
 		}
 	}
 }
