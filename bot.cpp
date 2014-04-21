@@ -46,6 +46,9 @@ void bot_motion (player_t *p, player_t *l)
 		} else if (dist < 1.1f) {
 			if (!(l->state & PLAYER_STATE_WALK))
 				l->state = PLAYER_STATE_FIRE;
+				
+			if (p->hp)
+				p->hp --;
 		}
 	}
 }
