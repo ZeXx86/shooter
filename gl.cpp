@@ -15,9 +15,9 @@ static unsigned fps_stick, fps_dtick;
 
 static GLuint vbo_wall_id;
 static GLuint vbo_floor_id;
-static GLuint fbo_screen_quad_id;
+static GLuint fbo_screen_quad_id, fbo_screen_quad_id2;
 static GLuint vbo_screen_quad_id;
-static GLuint renderTexture, depthTexture;
+static GLuint renderTexture, depthTexture, renderTexture2;
 
 static GLuint shader[10];
 
@@ -163,10 +163,12 @@ void gl_init_screen_quad()
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 	
 
+	int textureWidth = 1280;
+	int textureHeight = 800;
 	//create depth texture
 	glGenTextures(1,&depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,1280,800,0,GL_DEPTH_COMPONENT,GL_FLOAT,NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,textureWidth,textureHeight,0,GL_DEPTH_COMPONENT,GL_FLOAT,NULL);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
@@ -180,7 +182,7 @@ void gl_init_screen_quad()
 	//Create framebuffer texture
 	glGenTextures(1,&renderTexture);
 	glBindTexture(GL_TEXTURE_2D, renderTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,1280,800,0,GL_RGBA,GL_FLOAT,NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,textureWidth,textureHeight,0,GL_RGBA,GL_FLOAT,NULL);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
@@ -190,12 +192,36 @@ void gl_init_screen_quad()
 		printf("%s\n",gluErrorString(i));
 	glBindTexture(GL_TEXTURE_2D,0);
 
+	//Create framebuffer texture2
+	glGenTextures(1,&renderTexture2);
+	glBindTexture(GL_TEXTURE_2D, renderTexture2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,textureWidth,textureHeight,0,GL_RGBA,GL_FLOAT,NULL);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	i = glGetError();
+	if(i!=0)
+		printf("%s\n",gluErrorString(i));
+	glBindTexture(GL_TEXTURE_2D,0);
 	
 
-	
+	//Create FBO
 	glGenFramebuffers(1,&fbo_screen_quad_id);
 	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,renderTexture,0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthTexture,0);
+	i=glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if(i!=GL_FRAMEBUFFER_COMPLETE)
+		printf("Framebuffer failed: %d\n",i);
+
+	glEnable (GL_DEPTH_TEST);
+	glBindFramebuffer(GL_FRAMEBUFFER,0);
+
+	//Create FBO
+	glGenFramebuffers(1,&fbo_screen_quad_id2);
+	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id2);
+	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,renderTexture2,0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthTexture,0);
 	i=glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(i!=GL_FRAMEBUFFER_COMPLETE)
@@ -230,22 +256,24 @@ void gl_render_screen_quad ()
 }
 
 
-void render_screen_quad()
+void render_screen_quad(GLuint srcTexture)
 {
-	glUseProgram (shader[4]);
-	glm::mat4 ortho = glm::ortho (0.0f,2.0f,0.0f,2.0f,-1.0f,1.0f);
+		glUseProgram (shader[4]);
+		glm::mat4 ortho = glm::ortho (0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f);
 	
-	int uniform = glGetUniformLocation (shader[4], "PMatrix");
-	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
+		int uniform = glGetUniformLocation (shader[4], "PMatrix");
+		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
 
 	
-	GLuint tex_id  = glGetUniformLocation (shader[4], "TexSampler");
-	glUniform1i (tex_id, 0);
-	glBindTexture (GL_TEXTURE_2D, renderTexture);
+		GLuint tex_id  = glGetUniformLocation (shader[4], "TexSampler");
+		glUniform1i (tex_id, 0);
+		
+		glBindTexture (GL_TEXTURE_2D, srcTexture);
 	
-	gl_render_screen_quad();
+		gl_render_screen_quad();
 	
-	glUseProgram (0);
+		glUseProgram (0);
+		
 }
 
 void gl_init_floor ()
@@ -568,6 +596,22 @@ void gl_render_level ()
 	}
 }
 
+void blur_screen()
+{
+		//PING PONG - MULTIPASS BLUR - MORE ITERATIONS MORE BLUR
+	for(int i = 0; i<10;i++)
+	{
+		if(i%2==0)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id2);
+			render_screen_quad(renderTexture);
+		}else{
+			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
+			render_screen_quad(renderTexture2);	
+		}
+	}
+}
+
 void gl_render ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -596,20 +640,28 @@ void gl_render ()
 	/* Sky */
 	sky_system_render ();
 	
-	glFlush();
-	
-	
-	//RENDER TO SCREEN
-	glBindFramebuffer(GL_FRAMEBUFFER,0);
-	
-	render_screen_quad();
-
+	/*Particle systems */
 	particle_system_render (part_sys_get (0));
 	particle_system_render (part_sys_get (1));
 
+	/* Onscreen blood */
 	render_spatters ();
 	
+
+	//NAPRIKLAD IF PLAYER->STATE == INJURED
+	bool blur = true;
+	if(blur)
+		blur_screen();
+
+	//RENDER TO SCREEN
+	glBindFramebuffer(GL_FRAMEBUFFER,0);
+	
+	/* blured view */
+	render_screen_quad(renderTexture);
+
 	glFlush ();
+
+
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer
 	SDL_GL_SwapWindow (g_window);
 	//SDL_Delay (2);
