@@ -257,7 +257,7 @@ void gl_render_screen_quad ()
 }
 
 
-void render_screen_quad(GLuint srcTexture)
+void render_screen_quad(GLuint srcTexture, GLuint blur)
 {
 		glUseProgram (shader[4]);
 		glm::mat4 ortho = glm::ortho (0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f);
@@ -268,6 +268,9 @@ void render_screen_quad(GLuint srcTexture)
 		
 		uniform = glGetUniformLocation (shader[4], "pixelSize");
 		glUniform2f (uniform, 1/(float)textureWidth, 1/(float)textureHeight);
+
+		uniform = glGetUniformLocation (shader[4], "blur");
+		glUniform1ui (uniform,blur);
 	
 		GLuint tex_id  = glGetUniformLocation (shader[4], "TexSampler");
 		glUniform1i (tex_id, 0);
@@ -609,10 +612,10 @@ void blur_screen (player_t *p)
 		if(i%2==0)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id2);
-			render_screen_quad(renderTexture);
+			render_screen_quad(renderTexture,1);
 		}else{
 			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
-			render_screen_quad(renderTexture2);	
+			render_screen_quad(renderTexture2,1);	
 		}
 	}
 }
@@ -652,17 +655,12 @@ void gl_render ()
 	/* Onscreen blood */
 	render_spatters ();
 	
-
-	//NAPRIKLAD IF PLAYER->STATE == INJURED
-	bool blur = true;
-	if(blur)
-		blur_screen(p);
+	/* screen blurr based on player's hp */
+	blur_screen(p);
 
 	//RENDER TO SCREEN
 	glBindFramebuffer(GL_FRAMEBUFFER,0);
-	
-	/* blured view */
-	render_screen_quad(renderTexture);
+	render_screen_quad(renderTexture,0);
 
 	glFlush ();
 

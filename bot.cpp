@@ -56,3 +56,4 @@ void bot_motion (player_t *p, player_t *l)
 	}
 }
 
+

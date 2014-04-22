@@ -129,6 +129,10 @@ int logic_thread (void *unused)
 			}
 		}
 		
+		if((SDL_GetTicks () % 20 == 0)) 
+			if (p->hp < 100) 
+				p->hp ++;
+		
 		/* SPATTER UPDATE*/
 		spatter_update();
 
