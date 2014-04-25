@@ -21,6 +21,9 @@ static GLuint renderTexture, depthTexture, renderTexture2;
 
 static GLuint shader[10];
 
+static GLuint tex_depth;
+static GLuint fbo_shadows;
+
 static light_t light1;
 static material_t mat1;
 static material_t mat2;
@@ -28,6 +31,7 @@ static material_t mat2;
 void gl_init_wall ();
 void gl_init_floor ();
 void gl_init_screen_quad ();
+void gl_init_shadows ();
 
 
 /*** An MDL model ***/
@@ -56,6 +60,7 @@ bool gl_init ()
 	if (!mdl_read (PATH_DATA "player1.mdl", &mdlfile[1]))
 		return false;
 	
+	gl_init_shadows ();
 	gl_init_wall ();
 	gl_init_floor ();
 	gl_init_screen_quad ();
@@ -66,6 +71,8 @@ bool gl_init ()
 	shader[2] = shader_init ("data/shader_level");
 	shader[3] = shader_init ("data/shader_spatter");
 	shader[4] = shader_init ("data/shader_blur");
+	shader[5] = shader_init ("data/shader_level_s");
+	//shader[6] = shader_init ("data/shader_shadow");
 
 	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.2f;
 	light1.ambient[3] = 1.0f;
@@ -98,6 +105,40 @@ bool gl_init ()
 	
 	
 	return true;
+}
+
+void gl_init_shadows ()
+{
+	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+	glGenTextures (1, &tex_depth);
+	glBindTexture (GL_TEXTURE_2D, tex_depth);
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	
+	glBindTexture (GL_TEXTURE_2D, 0);
+	
+	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+	glGenFramebuffers (1, &fbo_shadows);
+	glBindFramebuffer (GL_FRAMEBUFFER, fbo_shadows);
+
+	//glFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D, tex_depth,0);
+	glFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, tex_depth,0);
+	
+	
+	glDrawBuffer (GL_NONE); // No color buffer is drawn to.
+	//glReadBuffer (GL_NONE);
+
+	
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return;
+	
+	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 
 void gl_init_wall ()
@@ -162,10 +203,10 @@ void gl_init_screen_quad()
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_screen_quad_id);
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 	
-
 	int textureWidth; 
 	int textureHeight;
 	SDL_GetWindowSize(g_window,&textureWidth,&textureHeight);
+	
 	//create depth texture
 	glGenTextures(1,&depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
@@ -174,9 +215,12 @@ void gl_init_screen_quad()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    int i = glGetError();
+	
+	int i = glGetError();
+	
 	if(i!=0)
 		printf("%s\n",gluErrorString(i));
+	
 	glBindTexture(GL_TEXTURE_2D,0);
 
 
@@ -189,8 +233,10 @@ void gl_init_screen_quad()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 	i = glGetError();
+	
 	if(i!=0)
 		printf("%s\n",gluErrorString(i));
+	
 	glBindTexture(GL_TEXTURE_2D,0);
 
 	//Create framebuffer texture2
@@ -201,19 +247,23 @@ void gl_init_screen_quad()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	
 	i = glGetError();
-	if(i!=0)
+	
+	if (i!=0)
 		printf("%s\n",gluErrorString(i));
+	
 	glBindTexture(GL_TEXTURE_2D,0);
 	
-
 	//Create FBO
 	glGenFramebuffers(1,&fbo_screen_quad_id);
 	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,renderTexture,0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthTexture,0);
+	
 	i=glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if(i!=GL_FRAMEBUFFER_COMPLETE)
+	
+	if (i!=GL_FRAMEBUFFER_COMPLETE)
 		printf("Framebuffer failed: %d\n",i);
 
 	glEnable (GL_DEPTH_TEST);
@@ -224,20 +274,18 @@ void gl_init_screen_quad()
 	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id2);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,renderTexture2,0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthTexture,0);
+	
 	i=glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if(i!=GL_FRAMEBUFFER_COMPLETE)
+	
+	if (i!=GL_FRAMEBUFFER_COMPLETE)
 		printf("Framebuffer failed: %d\n",i);
 
 	glEnable (GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER,0);
-
 }
 
 void gl_render_screen_quad ()
 {
-	
-	//glEnable (GL_BLEND); 
-
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_screen_quad_id);
 	
 	glEnableVertexAttribArray (0);
@@ -252,35 +300,38 @@ void gl_render_screen_quad ()
 	glDisableVertexAttribArray (1);
 	
 	glBindBuffer (GL_ARRAY_BUFFER, 0);
-	//glDisable (GL_BLEND);
-
 }
 
-
-void render_screen_quad(GLuint srcTexture, GLuint blur)
+void render_screen_quad (GLuint srcTexture, GLuint blur, GLuint s)
 {
-		glUseProgram (shader[4]);
-		glm::mat4 ortho = glm::ortho (0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f);
-		int textureWidth, textureHeight;
-		SDL_GetWindowSize(g_window,&textureWidth,&textureHeight);
-		int uniform = glGetUniformLocation (shader[4], "PMatrix");
-		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*) &ortho);
-		
-		uniform = glGetUniformLocation (shader[4], "pixelSize");
-		glUniform2f (uniform, 1/(float)textureWidth, 1/(float)textureHeight);
+	glUseProgram (s);
+	glm::mat4 ortho = glm::ortho (0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f);
+	int textureWidth, textureHeight;
+	SDL_GetWindowSize (g_window, &textureWidth, &textureHeight);
+	int uniform = glGetUniformLocation (s, "PMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float *) &ortho);
+	
+	uniform = glGetUniformLocation (s, "pixelSize");
+	glUniform2f (uniform, 1 / (float) textureWidth, 1 / (float) textureHeight);
 
-		uniform = glGetUniformLocation (shader[4], "blur");
-		glUniform1ui (uniform,blur);
+	uniform = glGetUniformLocation (s, "blur");
+	glUniform1ui (uniform,blur);
 	
-		GLuint tex_id  = glGetUniformLocation (shader[4], "TexSampler");
-		glUniform1i (tex_id, 0);
+	GLuint tex_id = glGetUniformLocation (s, "TexSampler");
+	glUniform1i (tex_id, 0);
+	
+	GLuint depth_id = glGetUniformLocation (s, "shadowMap");
+	glUniform1i (depth_id, 1);
 		
-		glBindTexture (GL_TEXTURE_2D, srcTexture);
+	glActiveTexture (GL_TEXTURE1); 
+	glBindTexture (GL_TEXTURE_2D, tex_depth);
 	
-		gl_render_screen_quad();
+	glActiveTexture (GL_TEXTURE0); 
+	glBindTexture (GL_TEXTURE_2D, srcTexture);
 	
-		glUseProgram (0);
-		
+	gl_render_screen_quad ();
+	
+	glUseProgram (0);		
 }
 
 void gl_init_floor ()
@@ -299,31 +350,6 @@ void gl_init_floor ()
 	glBindBuffer (GL_ARRAY_BUFFER, vbo_floor_id);
 	glBufferData (GL_ARRAY_BUFFER, sizeof (buf), buf, GL_STATIC_DRAW);
 }
-
-
-
-#ifndef __WIN32__
-static void gluPerspective (GLfloat fovy, GLfloat aspect,
-               GLfloat zNear, GLfloat zFar)//android ndk lacks glu tool kit (unbelievable)
-{
-    #define PI 3.1415926535897932f
-    GLfloat xmin, xmax, ymin, ymax;
-
-    ymax = zNear * (GLfloat)tan(fovy * PI / 360);
-    ymin = -ymax;
-    xmin = ymin * aspect;
-    xmax = ymax * aspect;
-
-#ifndef ANDROID
-glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
-#else
-    glFrustumx((GLfixed)(xmin * 65536), (GLfixed)(xmax * 65536),
-               (GLfixed)(ymin * 65536), (GLfixed)(ymax * 65536),
-               (GLfixed)(zNear * 65536), (GLfixed)(zFar * 65536));
-#endif
-    #undef PI
-}
-#endif
 
 void gl_resize (int width, int height)
 {
@@ -378,7 +404,6 @@ void gl_render_floor ()
 	glDisableVertexAttribArray (2);
 	
 	glBindBuffer (GL_ARRAY_BUFFER, 0);
-
 }
 
 
@@ -556,14 +581,30 @@ void gl_render_level ()
 			uniform = glGetUniformLocation (shader[2], "NormalMatrix");
 			glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
 			
+			/*glm::mat4 biasMatrix(
+				0.5, 0.0, 0.0, 0.0, 
+				0.0, 0.5, 0.0, 0.0,
+				0.0, 0.0, 0.5, 0.0,
+				0.5, 0.5, 0.5, 1.0
+			);
+			
+			uniform = glGetUniformLocation (shader[2], "DepthBiasMVP");
+			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&biasMatrix[0]);*/
+			
 			shader_getuniform_light (shader[2], &light1);
 			shader_getuniform_material (shader[2], &mat2);
 				
 			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
 			GLuint bump_id  = glGetUniformLocation (shader[2], "TexBump");
+			//GLuint depth_id  = glGetUniformLocation (shader[2], "shadowMap");
 			glUniform1i (tex_id, 0);
 			glUniform1i (bump_id, 1);
+			//glUniform1i (depth_id, 2);
 
+			/* depth texure */
+			glActiveTexture (GL_TEXTURE2); 
+			glBindTexture (GL_TEXTURE_2D, tex_depth);
+			
 			/* bump map */
 			glActiveTexture (GL_TEXTURE1); 
 			switch (b) {
@@ -591,7 +632,7 @@ void gl_render_level ()
 					glBindTexture (GL_TEXTURE_2D, tex_get (4));
 					break;
 			}
-
+			
 			if (b == '0')
 				gl_render_floor ();
 			else
@@ -607,35 +648,88 @@ void blur_screen (player_t *p)
 {
 	int blur = (100 - p->hp) / 10;
 	
-		//PING PONG - MULTIPASS BLUR - MORE ITERATIONS MORE BLUR
-	for(int i = 0; i<blur;i++) {
-		if(i%2==0)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id2);
-			render_screen_quad(renderTexture,1);
-		}else{
-			glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
-			render_screen_quad(renderTexture2,1);	
+	//PING PONG - MULTIPASS BLUR - MORE ITERATIONS MORE BLUR
+	for (int i = 0; i < blur; i ++) {
+		if (i % 2 == 0) {
+			glBindFramebuffer (GL_FRAMEBUFFER,fbo_screen_quad_id2);
+			render_screen_quad (renderTexture, 1, shader[4]);
+		} else {
+			glBindFramebuffer (GL_FRAMEBUFFER,fbo_screen_quad_id);
+			render_screen_quad (renderTexture2, 1, shader[4]);	
 		}
 	}
 }
 
+void gl_render_shadows ()
+{
+	camera_t *cam = camera_get ();
+	
+	glm::mat4 mdl_matrix;
+	
+	/* LEVEL RENDERING */
+	level_t *l = level_get ();
+
+
+	bool col = false;
+	for (unsigned x = 0; x < l->dim_x; x ++) {
+		for (unsigned y = 0; y < l->dim_y; y ++) {
+			unsigned char b = l->data[y*l->dim_x + x];
+
+			if (b == ' ')
+				continue;
+
+			mdl_matrix = glm::translate (glm::vec3 (x*WALL_DIM, 0.0f, y*WALL_DIM));
+
+			/* enable program and set uniform variables */
+			glUseProgram (shader[5]);
+			
+			glm::mat4 tmp = cam->projection * cam->view * mdl_matrix;
+
+			int uniform = glGetUniformLocation (shader[5], "depthMVP");
+			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+			
+			if (b == '0')
+				gl_render_floor ();
+			else
+				gl_render_wall ();
+	
+			/* disable program */
+			glUseProgram (0);
+		}
+	}
+}
+
+
 void gl_render ()
 {
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+
 	glLoadIdentity ();
 	
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_shadows);
+	glViewport (0, 0, 1024, 1024);
+	//glEnable (GL_CULL_FACE);
+	//glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
+
+        glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//glEnable (GL_DEPTH_TEST);
+	gl_render_shadows ();
+
+	glBindFramebuffer (GL_FRAMEBUFFER, 0);
+
 	camera_update ();
+	
+	//glEnable (GL_CULL_FACE);
+       // glCullFace (GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
 	
 	player_t *p = player_get ();
 	
-	
-	
 	//RENDER TO TEXTURE
-	glBindFramebuffer(GL_FRAMEBUFFER,fbo_screen_quad_id);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	//glEnable(GL_DEPTH_TEST);
-	
+	glBindFramebuffer (GL_FRAMEBUFFER, fbo_screen_quad_id);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable (GL_DEPTH_TEST);
+
 	/* Weapon */
 	gl_render_weapon (p);
 
@@ -656,14 +750,14 @@ void gl_render ()
 	render_spatters ();
 	
 	/* screen blurr based on player's hp */
-	blur_screen(p);
+	blur_screen (p);
 
 	//RENDER TO SCREEN
-	glBindFramebuffer(GL_FRAMEBUFFER,0);
-	render_screen_quad(renderTexture,0);
+	glBindFramebuffer (GL_FRAMEBUFFER, 0);
+	render_screen_quad (renderTexture, 0, shader[4]);
+	//render_screen_quad (tex_depth, 0, shader[6]);
 
 	glFlush ();
-
 
 	//SDL_GL_SwapBuffers ();// Prohodi predni a zadni buffer
 	SDL_GL_SwapWindow (g_window);

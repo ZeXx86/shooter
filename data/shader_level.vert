@@ -28,13 +28,18 @@ out vec3 ecNormal;
 out vec3 ecViewDir;
 // Output data ; will be interpolated for each fragment.
 out vec2 UV;
+out vec4 ShadowCoord;
+
+uniform mat4 DepthBiasMVP;
 
 void main()
 {
-    ecPosition = MVMatrix * vec4(VertexPosition, 1.0);
-    ecLightDir   = vec3(VMatrix * light.position - ecPosition);
-    ecNormal =  NormalMatrix * VertexNormal;
-    ecViewDir = -vec3(ecPosition);
-    UV = VertexTexCoord;
-    gl_Position  = PMatrix * ecPosition;
+	ecPosition = MVMatrix * vec4(VertexPosition, 1.0);
+	ecLightDir   = vec3(VMatrix * light.position - ecPosition);
+	ecNormal =  NormalMatrix * VertexNormal;
+	ecViewDir = -vec3(ecPosition);
+	UV = VertexTexCoord;
+	gl_Position  = PMatrix * ecPosition;
+	
+	ShadowCoord = DepthBiasMVP * gl_Position;
 }
