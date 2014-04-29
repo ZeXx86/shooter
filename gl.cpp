@@ -72,6 +72,7 @@ bool gl_init ()
 	shader[4] = shader_init ("data/shader_blur");
 	shader[5] = shader_init ("data/shader_level_s");
 	shader[6] = shader_init ("data/shader_bot_s");
+	shader[7] = shader_init ("data/shader_tess", true);
 
 	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.2f;
 	light1.ambient[3] = 1.0f;
@@ -153,6 +154,9 @@ void gl_init_shadows ()
 	
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
+
+
+
 
 void gl_init_wall ()
 {
@@ -470,6 +474,55 @@ void gl_render_weapon (player_t *p)
 	glUniform1i (tex_id, 0);
 	
 	shader_getuniform_light (shader[1], &light1);
+
+	mdl_renderitp (p->mdl_frame, p->mdl_itp, &mdlfile[0]);
+	
+	glUseProgram (0);
+}
+
+void gl_render_weapon_tess (player_t *p)
+{
+	camera_t *cam = camera_get ();
+	
+	if (p->state & PLAYER_STATE_FIRE) {
+		p->state &= ~PLAYER_STATE_FIRE;
+
+		/* new shot */
+		if (p->mdl_frame == 5) {
+			p->mdl_frame = 0;
+			p->action = 1;
+		}
+	}
+
+	if (p->mdl_frame < 5)
+		p->mdl_itp += 0.08f;
+
+ 	mdl_animate (0, mdlfile[0].header.num_frames - 1, &p->mdl_frame, &p->mdl_itp);
+
+	glm::mat4 mdl_matrix;
+	mdl_matrix = 	glm::translate (glm::vec3 (0.08f, -0.03, -0.18f)) *
+			glm::rotate (90.0f, glm::vec3 (0, 1, 0)) *
+			glm::rotate (-90.0f, glm::vec3 (1, 0, 0)) *
+			glm::scale (glm::vec3 (0.01f, 0.01f, 0.01f));
+	
+	/* enable program and set uniform variables */
+	glUseProgram (shader[7]);
+	
+	glm::mat4 tmp = /*cam->view * */mdl_matrix;
+
+	int uniform = glGetUniformLocation (shader[7], "PMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
+	uniform = glGetUniformLocation (shader[7], "VMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->view[0]);
+	uniform = glGetUniformLocation (shader[7], "MVMatrix");
+	glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+	uniform = glGetUniformLocation (shader[7], "NormalMatrix");
+	glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
+
+	GLuint tex_id  = glGetUniformLocation (shader[1], "TexSampler");
+	glUniform1i (tex_id, 0);
+	
+	shader_getuniform_light (shader[7], &light1);
 
 	mdl_renderitp (p->mdl_frame, p->mdl_itp, &mdlfile[0]);
 	

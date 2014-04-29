@@ -184,40 +184,141 @@ int shader_attach (GLuint prog, char *vert_file, char *frag_file)
 	return 0;
 }
 
-GLuint shader_init (char *file)
+
+int shader_attach_tess (GLuint prog, char *vert_file, char *frag_file, char *cont_file, char *eval_file)
 {
-	GLuint prog;
-	GLint res;
 
-	/* create program object and attach shaders */
-	prog = glCreateProgram ();
-
-	char vert_file[80];
-	sprintf (vert_file, "%s.vert", file);
-	char frag_file[80];
-	sprintf (frag_file, "%s.frag", file);
+	//vertex
+	GLuint vert = shader_compile (vert_file, GL_VERTEX_SHADER);
 	
-	shader_attach (prog, vert_file, frag_file);
-
-	/* link the program and make sure that there were no errors */
-	glLinkProgram (prog);
-	glGetProgramiv (prog, GL_LINK_STATUS, &res);
-
-	if (res == GL_FALSE) {
-		GLint len;
-		/* get the program info log */
-		glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
-		char *log = (char *) malloc (len);
-		glGetProgramInfoLog (prog, len, &res, log);
-
-		/* print an error message and the info log */
-		fprintf (stderr, "shader_init(): Program linking failed: %s\n", log);
-		free (log);
-
-		/* delete the program */
-		glDeleteProgram (prog);
-		prog = 0;
+	if (!vert) {
+		cerr << "File for Vertex Shader cannot be open!" << endl;
+		return -1;
 	}
 	
-	return prog;
+	glAttachShader (prog, vert);
+	/* shader neni smazan, dokud neni uvolnen program */
+	glDeleteShader (vert);
+	
+	//fragment
+	GLuint frag = shader_compile (frag_file, GL_FRAGMENT_SHADER);
+	
+	if (!frag) {
+		cerr << "File for Fragment Shader cannot be open!" << endl;
+		return -1;
+	}
+	
+	glAttachShader (prog, frag);
+	/* shader neni smazan, dokud neni uvolnen program */
+	glDeleteShader (frag);
+
+
+	//control
+	GLuint eval = shader_compile (eval_file, GL_TESS_EVALUATION_SHADER);
+	
+	if (!eval) {
+		cerr << "File for Evaluation Shader cannot be open!" << endl;
+		return -1;
+	}
+	
+	glAttachShader (prog, eval);
+	/* shader neni smazan, dokud neni uvolnen program */
+	glDeleteShader (eval);
+
+	
+	//CONTROL
+	GLuint cont = shader_compile (cont_file, GL_TESS_CONTROL_SHADER);
+	
+	if (!cont) {
+		cerr << "File for control Shader cannot be open!" << endl;
+		return -1;
+	}
+	
+	glAttachShader (prog, cont);
+	/* shader neni smazan, dokud neni uvolnen program */
+	glDeleteShader (cont);
+	
+	return 0;
+}
+
+GLuint shader_init (char *file, bool tesselation)
+{
+	if(!tesselation)
+	{
+		GLuint prog;
+		GLint res;
+
+		/* create program object and attach shaders */
+		prog = glCreateProgram ();
+
+		char vert_file[80];
+		sprintf (vert_file, "%s.vert", file);
+		char frag_file[80];
+		sprintf (frag_file, "%s.frag", file);
+	
+	
+		shader_attach (prog, vert_file, frag_file);
+
+		/* link the program and make sure that there were no errors */
+		glLinkProgram (prog);
+		glGetProgramiv (prog, GL_LINK_STATUS, &res);
+
+		if (res == GL_FALSE) {
+			GLint len;
+			/* get the program info log */
+			glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
+			char *log = (char *) malloc (len);
+			glGetProgramInfoLog (prog, len, &res, log);
+
+			/* print an error message and the info log */
+			fprintf (stderr, "shader_init(): Program linking failed: %s\n", log);
+			free (log);
+
+			/* delete the program */
+			glDeleteProgram (prog);
+			prog = 0;
+		}
+	
+		return prog;
+	}
+	else
+	{
+		GLuint prog;
+		GLint res;
+
+		/* create program object and attach shaders */
+		prog = glCreateProgram ();
+
+		char vert_file[80];
+		sprintf (vert_file, "%s.vert", file);
+		char frag_file[80];
+		sprintf (frag_file, "%s.frag", file);
+		char cont_file[80];
+		sprintf (cont_file, "%s.cont", file);
+		char eval_file[80];
+		sprintf (eval_file, "%s.eval", file);
+	
+	
+		shader_attach_tess (prog, vert_file, frag_file,cont_file,eval_file);
+
+		/* link the program and make sure that there were no errors */
+		glLinkProgram (prog);
+		glGetProgramiv (prog, GL_LINK_STATUS, &res);
+
+		if (res == GL_FALSE) {
+			GLint len;
+			/* get the program info log */
+			glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
+			char *log = (char *) malloc (len);
+			glGetProgramInfoLog (prog, len, &res, log);
+
+			/* print an error message and the info log */
+			fprintf (stderr, "shader_init(): Program linking failed: %s\n", log);
+			free (log);
+
+			/* delete the program */
+			glDeleteProgram (prog);
+			prog = 0;
+		}	
+	}
 }
