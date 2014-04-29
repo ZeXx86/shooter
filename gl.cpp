@@ -33,6 +33,8 @@ void gl_init_floor ();
 void gl_init_screen_quad ();
 void gl_init_shadows ();
 
+glm::mat4 depthMVP;
+
 
 /*** An MDL model ***/
 struct mdl_model_t mdlfile[3];
@@ -50,8 +52,6 @@ bool gl_init ()
 	glShadeModel (GL_SMOOTH);
 	glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable (GL_TEXTURE_2D);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_BLEND);
 
 	/* Load MDL model file */
 	if (!mdl_read (PATH_DATA "v_shot.mdl", &mdlfile[0]))
@@ -64,7 +64,6 @@ bool gl_init ()
 	gl_init_wall ();
 	gl_init_floor ();
 	gl_init_screen_quad ();
-	//gl_init_spatter ();
 	
 	shader[0] = shader_init ("data/shader_bot");
 	shader[1] = shader_init ("data/shader_gun");
@@ -72,7 +71,7 @@ bool gl_init ()
 	shader[3] = shader_init ("data/shader_spatter");
 	shader[4] = shader_init ("data/shader_blur");
 	shader[5] = shader_init ("data/shader_level_s");
-	//shader[6] = shader_init ("data/shader_shadow");
+	shader[6] = shader_init ("data/shader_bot_s");
 
 	light1.ambient[0] = light1.ambient[1] = light1.ambient[2] = 0.2f;
 	light1.ambient[3] = 1.0f;
@@ -104,6 +103,16 @@ bool gl_init ()
 	mat2.name = strdup ("material");
 	
 	
+	//glm::mat4 tmp = glm::rotate (180.0f, glm::vec3 (0, 1, 0));
+	
+	/*glm::vec3 lightInvDir = glm::vec3(-2,0,-2);
+
+	// Compute the MVP matrix from the light's point of view
+	glm::mat4 depthProjectionMatrix = glm::perspective (70.0f, (float) 4.0f/3.0f, 0.1f, 100.0f);//glm::ortho<float>(-10,10,-10,10,-10,20);
+	glm::mat4 depthViewMatrix = glm::rotate (180.0f, glm::vec3 (0, 1, 0)) * glm::translate (glm::vec3(light1.position[0], light1.position[1], light1.position[2]));//mglm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+	glm::mat4 depthModelMatrix = glm::mat4(1.0);
+	depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;*/
+	
 	return true;
 }
 
@@ -113,12 +122,17 @@ void gl_init_shadows ()
 	glGenTextures (1, &tex_depth);
 	glBindTexture (GL_TEXTURE_2D, tex_depth);
 
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); 
 
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	//glTexImage2D (GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,1024,1024,0,GL_RGBA,GL_FLOAT, NULL);
 	
 	glBindTexture (GL_TEXTURE_2D, 0);
 	
@@ -126,14 +140,13 @@ void gl_init_shadows ()
 	glGenFramebuffers (1, &fbo_shadows);
 	glBindFramebuffer (GL_FRAMEBUFFER, fbo_shadows);
 
-	//glFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D, tex_depth,0);
-	glFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, tex_depth,0);
-	
+	//glFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_depth, 0);
+	//glFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex_depth, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tex_depth, 0);
 	
 	glDrawBuffer (GL_NONE); // No color buffer is drawn to.
 	//glReadBuffer (GL_NONE);
 
-	
 	// Always check that our framebuffer is ok
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return;
@@ -320,12 +333,6 @@ void render_screen_quad (GLuint srcTexture, GLuint blur, GLuint s)
 	GLuint tex_id = glGetUniformLocation (s, "TexSampler");
 	glUniform1i (tex_id, 0);
 	
-	GLuint depth_id = glGetUniformLocation (s, "shadowMap");
-	glUniform1i (depth_id, 1);
-		
-	glActiveTexture (GL_TEXTURE1); 
-	glBindTexture (GL_TEXTURE_2D, tex_depth);
-	
 	glActiveTexture (GL_TEXTURE0); 
 	glBindTexture (GL_TEXTURE_2D, srcTexture);
 	
@@ -467,15 +474,6 @@ void gl_render_weapon (player_t *p)
 	mdl_renderitp (p->mdl_frame, p->mdl_itp, &mdlfile[0]);
 	
 	glUseProgram (0);
-	
-	/*glPushMatrix ();
-		glTranslatef (0.08f, -0.03, -0.18f);
-		glRotatef (90, 0, 1, 0);
-		glRotatef (-90, 1, 0, 0);
-	
-		glScalef (0.01f, 0.01f, 0.01f);
-		mdl_renderitp (p->mdl_frame, p->mdl_itp, &mdlfile[0]);
-	glPopMatrix ();*/
 }
 
 void gl_render_players (player_t *p)
@@ -490,12 +488,7 @@ void gl_render_players (player_t *p)
 		l->mdl_itp += 0.08f;
 
 	 	mdl_animate (0, mdlfile[1].header.num_frames - 1, &l->mdl_frame, &l->mdl_itp);
-	
 
-		/*glTranslatef (-l->pos_x, -0.4, -l->pos_y);
-		glRotatef (l->rot_y-90, 0, 1, 0);
-		glRotatef (-90, 1, 0, 0);
-		glScalef (0.023f, 0.023f, 0.023f);*/
 		glm::mat4 mdl_matrix;
 		mdl_matrix = 	glm::translate (glm::vec3 (-l->pos_x, -0.4, -l->pos_y)) *
 				glm::rotate (l->rot_y-90, glm::vec3 (0, 1, 0)) *
@@ -570,8 +563,26 @@ void gl_render_level ()
 			/* enable program and set uniform variables */
 			glUseProgram (shader[2]);
 			
-			glm::mat4 tmp = cam->view * mdl_matrix;
+			glm::vec3 lightInvDir = glm::vec3(1,0.3f,1);
+			
+			glm::mat4 biasMatrix(
+				0.5, 0.0, 0.0, 0.0, 
+				0.0, 0.5, 0.0, 0.0,
+				0.0, 0.0, 0.5, 0.0,
+				0.5, 0.5, 0.5, 1.0
+			);
 
+			// Compute the MVP matrix from the light's point of view
+			glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,-10,20);
+			glm::mat4 depthViewMatrix = glm::rotate (180.0f, glm::vec3 (0, 1, 0)) * glm::translate (glm::vec3 (-4, 0, -4));// glm::lookAt(lightInvDir, glm::vec3(4,0,4), glm::vec3(0,1,0));
+			glm::mat4 depthModelMatrix = mdl_matrix;
+			depthMVP = depthProjectionMatrix * depthViewMatrix;
+			
+			glm::mat4 depthBiasMVP = biasMatrix * depthMVP * mdl_matrix;
+			
+			
+			glm::mat4 tmp = cam->view * mdl_matrix;
+		
 			int uniform = glGetUniformLocation (shader[2], "PMatrix");
 			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&cam->projection[0]);
 			uniform = glGetUniformLocation (shader[2], "VMatrix");
@@ -581,25 +592,18 @@ void gl_render_level ()
 			uniform = glGetUniformLocation (shader[2], "NormalMatrix");
 			glUniformMatrix3fv (uniform, 1, GL_FALSE, (float*)&(glm::inverseTranspose(glm::mat3(tmp)))[0]);
 			
-			/*glm::mat4 biasMatrix(
-				0.5, 0.0, 0.0, 0.0, 
-				0.0, 0.5, 0.0, 0.0,
-				0.0, 0.0, 0.5, 0.0,
-				0.5, 0.5, 0.5, 1.0
-			);
-			
 			uniform = glGetUniformLocation (shader[2], "DepthBiasMVP");
-			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&biasMatrix[0]);*/
+			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&depthBiasMVP[0]);
 			
 			shader_getuniform_light (shader[2], &light1);
 			shader_getuniform_material (shader[2], &mat2);
 				
 			GLuint tex_id  = glGetUniformLocation (shader[2], "TexSampler");
 			GLuint bump_id  = glGetUniformLocation (shader[2], "TexBump");
-			//GLuint depth_id  = glGetUniformLocation (shader[2], "shadowMap");
+			GLuint depth_id  = glGetUniformLocation (shader[2], "shadowMap");
 			glUniform1i (tex_id, 0);
 			glUniform1i (bump_id, 1);
-			//glUniform1i (depth_id, 2);
+			glUniform1i (depth_id, 2);
 
 			/* depth texure */
 			glActiveTexture (GL_TEXTURE2); 
@@ -660,11 +664,10 @@ void blur_screen (player_t *p)
 	}
 }
 
-void gl_render_shadows ()
+void gl_render_shadows (player_t *p)
 {
+#ifdef SHADOW_LEVEL_ENABLE
 	camera_t *cam = camera_get ();
-	
-	glm::mat4 mdl_matrix;
 	
 	/* LEVEL RENDERING */
 	level_t *l = level_get ();
@@ -678,13 +681,11 @@ void gl_render_shadows ()
 			if (b == ' ')
 				continue;
 
-			mdl_matrix = glm::translate (glm::vec3 (x*WALL_DIM, 0.0f, y*WALL_DIM));
-
 			/* enable program and set uniform variables */
 			glUseProgram (shader[5]);
+						
+			glm::mat4 tmp = depthMVP * glm::translate (glm::vec3 (x*WALL_DIM, 0.0f, y*WALL_DIM));
 			
-			glm::mat4 tmp = cam->projection * cam->view * mdl_matrix;
-
 			int uniform = glGetUniformLocation (shader[5], "depthMVP");
 			glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
 			
@@ -697,6 +698,60 @@ void gl_render_shadows ()
 			glUseProgram (0);
 		}
 	}
+#endif
+	
+	camera_t *cam = camera_get ();
+	
+	player_t *l;
+	for (l = player_list.next; l != &player_list; l = l->next) {
+		if (p == l)
+			continue;
+
+	 	mdl_animate (0, mdlfile[1].header.num_frames - 1, &l->mdl_frame, &l->mdl_itp);
+	
+
+		/*glTranslatef (-l->pos_x, -0.4, -l->pos_y);
+		glRotatef (l->rot_y-90, 0, 1, 0);
+		glRotatef (-90, 1, 0, 0);
+		glScalef (0.023f, 0.023f, 0.023f);*/
+		glm::mat4 mdl_matrix;
+		mdl_matrix = 	glm::translate (glm::vec3 (-l->pos_x, -0.4, -l->pos_y)) *
+				glm::rotate (l->rot_y-90, glm::vec3 (0, 1, 0)) *
+				glm::rotate (-90.0f, glm::vec3 (1, 0, 0)) *
+				glm::scale (glm::vec3 (0.023f, 0.023f, 0.023f));
+			
+		/* enable program and set uniform variables */
+		glUseProgram (shader[6]);
+	
+		glm::mat4 tmp = depthMVP * mdl_matrix;
+			
+		int uniform = glGetUniformLocation (shader[6], "depthMVP");
+		glUniformMatrix4fv (uniform, 1, GL_FALSE, (float*)&tmp[0]);
+		
+		mdl_renderitp (l->mdl_frame, l->mdl_itp, &mdlfile[1]);
+			
+		/* disable program */
+		glUseProgram (0);
+		
+		switch (l->state) {
+			case PLAYER_STATE_WALK:
+				if (l->mdl_frame > 4)
+					l->mdl_frame = 0;
+				break;
+			case PLAYER_STATE_FIRE:
+				if (l->mdl_frame > 116)
+					l->mdl_frame = 110;
+				if (l->mdl_frame < 110)
+					l->mdl_frame = 110;
+				break;
+			case 0:
+				if (l->mdl_frame > 27)
+					l->mdl_frame = 17;
+				else if (l->mdl_frame < 17)
+					l->mdl_frame = 17;
+				break;
+		}
+	}
 }
 
 
@@ -705,26 +760,25 @@ void gl_render ()
 	glMatrixMode(GL_PROJECTION);
 
 	glLoadIdentity ();
+
+	player_t *p = player_get ();
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_shadows);
 	glViewport (0, 0, 1024, 1024);
-	//glEnable (GL_CULL_FACE);
-	//glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
-
+	
         glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//glEnable (GL_DEPTH_TEST);
-	gl_render_shadows ();
+	glEnable (GL_DEPTH_TEST);
+	gl_render_shadows (p);
+	//gl_render_level ();
+	//gl_render_players (p);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	camera_update ();
-	
-	//glEnable (GL_CULL_FACE);
+
        // glCullFace (GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
-	
-	player_t *p = player_get ();
 	
 	//RENDER TO TEXTURE
 	glBindFramebuffer (GL_FRAMEBUFFER, fbo_screen_quad_id);

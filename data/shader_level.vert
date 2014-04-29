@@ -41,5 +41,5 @@ void main()
 	UV = VertexTexCoord;
 	gl_Position  = PMatrix * ecPosition;
 	
-	ShadowCoord = DepthBiasMVP * gl_Position;
+	ShadowCoord = DepthBiasMVP * vec4(VertexPosition, 1.0);
 }

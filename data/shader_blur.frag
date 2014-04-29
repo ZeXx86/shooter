@@ -5,13 +5,11 @@
 layout(location = 0) out vec4 FragColor;
 
 uniform sampler2D TexSampler;
-uniform sampler2D shadowMap;
 
 uniform vec2 pixelSize;
 uniform uint blur;
 
 in vec2 UV;
-in vec4 ShadowCoord;
 
 void main()
 { 
@@ -30,11 +28,6 @@ void main()
 	
 		FragColor =  result;
 	} else {
-		//float visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
-		//if (visibility < 0.9)
-		//	visibility = 0.5;
-
-		FragColor = vec4(texture (TexSampler, UV).rgb,1.0);// * visibility;
-	
+		FragColor = vec4(texture (TexSampler, UV).rgb,1.0);
 	}
 }

@@ -29,6 +29,7 @@ uniform MaterialInfo material;
 // Values that stay constant for the whole mesh.
 uniform sampler2D TexSampler;
 uniform sampler2D TexBump;
+uniform sampler2DShadow shadowMap;
 
 //The prefix ec means Eye Coordinates in the Eye Coordinate System
 in vec4 ecPosition;			
@@ -39,6 +40,7 @@ in vec3 ecViewDir;
 // Interpolated values from the vertex shaders
 in vec2 UV;
 
+in vec4 ShadowCoord;
 
 void main()
 {
@@ -62,5 +64,8 @@ void main()
 	}
 
 	FragColor *= texColor;
-
+	
+	float visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
+		
+	FragColor *= visibility;
 }
